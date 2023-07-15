@@ -16,6 +16,9 @@ import { SelectList } from "react-native-dropdown-select-list";
 const Reservation = () => {
   const [saveDetails, setSaveDetails] = useState(null);
 
+  const [progress, setProgress] = useState(0);
+  const [progressColor, setProgressColor] = useState("red");
+
   const [destination, setDestination] = useState("");
   const [origin, setOrigin] = useState("");
   const [rideType, setRideType] = useState("");
@@ -35,6 +38,12 @@ const Reservation = () => {
     { key: "3", value: "Luggage Transport" },
     { key: "4", value: "Pick up and Delivery" },
   ];
+
+  useEffect(() => {
+    if (origin.trim() !== "") setProgress(0.5);
+    if (destination.trim() !== "") setProgress(1);
+    if (rideType.trim() !== "") setProgressColor("green");
+  }, [progress, origin, destination, rideType]);
 
   useEffect(() => {
     (async () => {
