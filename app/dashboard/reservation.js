@@ -94,8 +94,8 @@ const Reservation = () => {
             <HandThumbUpIcon size={20} color="#166534" />
           </View>
           <ProgressBar
-            progress={0.5}
-            color="#166534"
+            progress={progress}
+            color={progressColor}
             height={10}
             animationType="spring"
             indeterminate={false}
