@@ -134,10 +134,8 @@ const PaymentModal = ({ visible, setVisible, setConfirmedPayment }) => {
           <View className="items-center">
             <TouchableOpacity
               onPress={() => {
-                if (cash === true) {
-                  setConfirmedPayment(true);
-                  setVisible(false);
-                }
+                setConfirmedPayment(true);
+                setVisible(false);
               }}
               className="w-full rounded-md items-center px-5 py-3 bg-yellow-500"
             >
