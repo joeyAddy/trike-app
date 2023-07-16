@@ -52,7 +52,7 @@ const Reservation = () => {
     { key: "7", value: "KASU Market" },
   ];
   const typeOfRide = [
-    { key: "1", value: "Chatter" },
+    { key: "1", value: "Chartered" },
     { key: "2", value: "Inter Campus" },
     { key: "3", value: "Luggage Transport" },
     { key: "4", value: "Pick up and Delivery" },
@@ -99,6 +99,7 @@ const Reservation = () => {
               visible={visible}
               onDismiss={() => {
                 setVisible(false);
+                router.push(`/map`);
               }}
               contentContainerStyle={containerStyle}
             >
@@ -107,7 +108,7 @@ const Reservation = () => {
                   Searching for a ride
                 </Text>
                 <View className="items-center">
-                  <ActivityIndicator size={150} />
+                  <ActivityIndicator size={150} color="#166534" />
                 </View>
               </View>
             </Modal>
