@@ -50,7 +50,7 @@ const StudentDashboard = ({ saveDetails, role }) => {
       <TouchableOpacity
         className="rounded-md bg-green-800 mt-20 py-3"
         onPress={() => {
-          router.push(`/dashboard/reservation`);
+          router.push({ pathname: `/dashboard/reservation`, params: { role } });
         }}
       >
         <Text className="text-xl text-center text-white">
