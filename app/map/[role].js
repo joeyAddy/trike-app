@@ -3,7 +3,7 @@ import { StyleSheet, View, Dimensions, Text, Alert } from "react-native";
 import MapView, { Marker, Polyline } from "react-native-maps";
 import * as Location from "expo-location";
 import { SafeAreaView } from "react-native";
-import { Stack, useSearchParams } from "expo-router";
+import { Stack, useLocalSearchParams, useSearchParams } from "expo-router";
 import { UserCircleIcon } from "react-native-heroicons/outline";
 import { QuestionMarkCircleIcon } from "react-native-heroicons/solid";
 import { TouchableOpacity } from "react-native";
@@ -20,30 +20,37 @@ import originIcon from "../../assets/origin.png";
 import { Image } from "react-native";
 
 const MapScreen = () => {
-  const params = useSearchParams();
+  const params = useLocalSearchParams();
   const [role, setRole] = useState("");
 
   const [location, setLocation] = useState(null);
   const [coordinates, setCoordinates] = useState([]);
 
-  const [origin, SetOrigin] = useState({
-    latitude: 10.511347380902507,
-    longitude: 7.416611710045729,
+  const [origin, setOrigin] = useState({
+    latitude: parseFloat(params?.origin.split(" ")[0]),
+    longitude: parseFloat(params?.origin.split(" ")[1]),
   });
-  const [destination, SetDestination] = useState({
-    latitude: 10.516040124108232,
-    longitude: 7.449982116612093,
+  const [destination, setDestination] = useState({
+    latitude: parseFloat(params?.destination.split(" ")[0]),
+    longitude: parseFloat(params?.destination.split(" ")[1]),
   });
   const [rideInfo, setRideInfo] = useState();
+  const [rideType, setRideType] = useState();
 
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [confirmedPayment, setConfirmedPayment] = useState(false);
   const [waiting, setWaiting] = useState(false);
+  const [searching, setSearching] = useState(false);
 
   useEffect(() => {
     setRole(params.role);
   }, [params.role]);
+
+  useEffect(() => {
+    if (!params.rideType) setSearching(true);
+    setRideType(params.rideType);
+  }, [params.rideType]);
 
   useEffect(() => {
     (async () => {
@@ -83,7 +90,13 @@ const MapScreen = () => {
       }
     };
 
-    getDirections();
+    if (
+      origin.latitude &&
+      origin.longitude &&
+      destination.latitude &&
+      origin.longitude
+    )
+      getDirections();
   }, []);
 
   const decodePolyline = (encoded) => {
@@ -105,7 +118,7 @@ const MapScreen = () => {
               headerShown: false,
             }}
           />
-          {location ? (
+          {location && coordinates && rideType ? (
             <View style={styles.container}>
               <CancelRideModal
                 visible={showCancelModal}
@@ -126,7 +139,18 @@ const MapScreen = () => {
                 visible={waiting}
                 text="Waiting for Rider to accept ride"
               />
-              {location && rideInfo && (
+              {role === "student" &&
+                !coordinates &&
+                !origin &&
+                !destination &&
+                !rideType(
+                  <LoadingModal
+                    setVisible={setSearching}
+                    visible={searching}
+                    text=" Searching for a ride"
+                  />
+                )}
+              {location && coordinates && rideInfo ? (
                 <View className="relative h-3/5">
                   <MapView
                     className="h-2/3"
@@ -208,6 +232,10 @@ const MapScreen = () => {
                     </View>
                   )}
                 </View>
+              ) : (
+                <View className=" h-3/5 flex-1 items-center justify-center space-y-4">
+                  <ActivityIndicator size={40} color="#166534" />
+                </View>
               )}
               <View className="h-2/5 relative bottom-0 space-y-4 bg-slate-50 shadow-2xl border-2 p-3 border-green-800 w-full rounded-tr-xl rounded-tl-xl">
                 <View className="flex-row justify-between items-center">
@@ -241,7 +269,7 @@ const MapScreen = () => {
                       </View>
                       <View>
                         <Text className="font-bold">Type of Ride</Text>
-                        <Text className="text-green-800">Chartered</Text>
+                        <Text className="text-green-800">{rideType}</Text>
                       </View>
                     </View>
                     <View className="space-y-3">

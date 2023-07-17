@@ -22,18 +22,18 @@ const LoadingModal = ({
   };
 
   useEffect(() => {
-    setTimeout(() => {
-      setVisible(false);
-      if (role && role === "rider") setShowRequestModal(true);
-      if (!route) return;
-      router.push(`/${route}`);
-    }, 2000);
+    // setTimeout(() => {
+    setVisible(false);
+    if (role && role === "rider") setShowRequestModal(true);
+    if (!route) return;
+    router.push(`/${route}`);
+    // }, 2000);
   }, []);
   return (
     <Portal>
       <Modal
         dismissableBackButton={true}
-        dismissable={true}
+        // dismissable={true}
         visible={visible}
         onDismiss={() => {
           setVisible(false);

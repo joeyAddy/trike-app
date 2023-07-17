@@ -89,14 +89,6 @@ const Reservation = () => {
           }}
         />
         <View className="flex-1 px-6 pt-5">
-          {role.trim() !== "" && (
-            <LoadingModal
-              setVisible={setVisible}
-              visible={visible}
-              text=" Searching for a ride"
-              route={`map/${role}`}
-            />
-          )}
           <View className="text-center text-3xl font-bold w-full">
             <View className="w-full pb-10 flex-row items-center justify-between mt-5">
               <TouchableOpacity
@@ -239,6 +231,14 @@ const Reservation = () => {
               className="rounded-md bg-green-800 mt-20 py-3"
               onPress={() => {
                 setVisible(true);
+                router.push({
+                  pathname: `map/${role}`,
+                  params: {
+                    origin,
+                    destination,
+                    rideType,
+                  },
+                });
               }}
             >
               <Text className="text-xl text-center text-white">
