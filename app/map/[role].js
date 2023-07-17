@@ -34,6 +34,7 @@ const MapScreen = () => {
     latitude: 10.516040124108232,
     longitude: 7.449982116612093,
   });
+  const [rideInfo, setRideInfo] = useState();
 
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -58,20 +59,25 @@ const MapScreen = () => {
   }, []);
 
   useEffect(() => {
+    if (rideInfo) console.log(rideInfo, "ride info");
+  }, []);
+
+  useEffect(() => {
     const getDirections = async () => {
       const apiUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&key=${GOOGLE_MAPS_API_KEY}`;
 
       try {
         const response = await fetch(apiUrl);
         const data = await response.json();
-        console.log(data, "data from request");
-        Alert.alert(JSON.stringify(data));
         const points = data.routes[0].overview_polyline.points;
+        const legs = data.routes[0].legs[0];
 
         if (points) {
           const coords = decodePolyline(points);
           setCoordinates(coords);
         }
+
+        if (legs) setRideInfo(legs);
       } catch (error) {
         console.error(error, "error from direction");
       }
@@ -120,68 +126,90 @@ const MapScreen = () => {
                 visible={waiting}
                 text="Waiting for Rider to accept ride"
               />
-              {location && (
-                <MapView
-                  className="h-2/3"
-                  style={styles.map}
-                  initialRegion={{
-                    latitude: location.coords.latitude,
-                    longitude: location.coords.longitude,
-                    latitudeDelta: 0.0922,
-                    longitudeDelta: 0.0421,
-                  }}
-                >
-                  <Marker
-                    coordinate={{
+              {location && rideInfo && (
+                <View className="relative h-3/5">
+                  <MapView
+                    className="h-2/3"
+                    style={styles.map}
+                    initialRegion={{
                       latitude: location.coords.latitude,
                       longitude: location.coords.longitude,
+                      latitudeDelta: 0.0922,
+                      longitudeDelta: 0.0421,
                     }}
-                    title="My Location"
-                    description="This is your current location"
-                  />
-                  <Marker
-                    coordinate={{
-                      latitude: origin.latitude,
-                      longitude: origin.longitude,
-                    }}
-                    title="Origin"
-                    description="This is where your trip starts"
-                    >
-                    <Image
-                      source={originIcon}
-                      style={{
-                        resizeMode: "contain",
-                        height: 50,
-                        width: 50,
-                      }}
-                    />
-                  </Marker>
-                  <Marker
-                    style={styles.markerStyle}
-                    coordinate={{
-                      latitude: destination.latitude,
-                      longitude: destination.longitude,
-                    }}
-                    title="Destination"
-                    description="Your cruise ends here"
                   >
-                    <Image
-                      source={destinationIcon}
-                      style={{
-                        resizeMode: "contain",
-                        height: 50,
-                        width: 50,
+                    <Marker
+                      coordinate={{
+                        latitude: location.coords.latitude,
+                        longitude: location.coords.longitude,
                       }}
+                      title="My Location"
+                      description={"This is your current location"}
                     />
-                  </Marker>
-                  <Polyline
-                    coordinates={coordinates}
-                    strokeWidth={5}
-                    strokeColor="#166534"
-                  />
-                </MapView>
+                    <Marker
+                      coordinate={{
+                        latitude: origin.latitude,
+                        longitude: origin.longitude,
+                      }}
+                      title="Origin"
+                      description={rideInfo.start_address}
+                    >
+                      <Image
+                        source={originIcon}
+                        style={{
+                          resizeMode: "contain",
+                          height: 50,
+                          width: 50,
+                        }}
+                      />
+                    </Marker>
+                    <Marker
+                      style={styles.markerStyle}
+                      coordinate={{
+                        latitude: destination.latitude,
+                        longitude: destination.longitude,
+                      }}
+                      title="Destination"
+                      description={rideInfo.end_address}
+                    >
+                      <Image
+                        source={destinationIcon}
+                        style={{
+                          resizeMode: "contain",
+                          height: 50,
+                          width: 50,
+                        }}
+                      />
+                    </Marker>
+                    <Polyline
+                      coordinates={coordinates}
+                      strokeWidth={8}
+                      strokeColor="#3b82f6"
+                    />
+                    <Polyline
+                      coordinates={coordinates}
+                      strokeWidth={4}
+                      strokeColor="#93c5fd"
+                    />
+                  </MapView>
+                  {rideInfo && (
+                    <View className="absolute fill-blue-300 bottom-6 left-4 bg-white p-3 shadow-2xl shadow-black rounded-lg">
+                      <Text className="font-bold text-green-800 text-lg">
+                        Ride Information
+                      </Text>
+                      <View className="space-y-1">
+                        <Text className="font-bold text-green-800 text-md">
+                          Distance: <Text>{rideInfo.distance?.text}</Text>
+                        </Text>
+                        <Text className="font-bold text-green-800 text-md">
+                          Duration: <Text>{rideInfo.duration?.text}</Text>
+                        </Text>
+                      </View>
+                    </View>
+                  )}
+                </View>
               )}
-              <View className="h-4/5 relative bottom-0 space-y-4 bg-slate-50 shadow-2xl border-2 p-3 border-green-800 w-full rounded-tr-xl rounded-tl-xl">
+              <View className="h-2/5 relative bottom-0 space-y-4 bg-slate-50 shadow-2xl border-2 p-3 border-green-800 w-full rounded-tr-xl rounded-tl-xl">
                 <View className="flex-row justify-between items-center">
                   <View className="flex-row space-x-2">
                     <UserCircleIcon size={60} color="#166534" />
