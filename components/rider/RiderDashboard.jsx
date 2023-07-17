@@ -12,12 +12,34 @@ import {
 } from "react-native-heroicons/outline";
 import { clearLocalStorage } from "../../utils/localStorage";
 import { useRouter } from "expo-router";
+import LoadingModal from "../common/LoadingModal";
+import { useState } from "react";
+import { ScrollView } from "react-native-gesture-handler";
+import RideRequestModal from "./RideRequestModal";
 
 const RiderDashboard = ({ saveDetails, role }) => {
   const router = useRouter();
+  const [visible, setVisible] = useState(false);
+  const [showRequestModal, setShowRequestModal] = useState(false);
+
   console.log(saveDetails);
   return (
     <View className="text-center text-3xl font-bold w-full ">
+      {role !== "" && (
+        <LoadingModal
+          setVisible={setVisible}
+          visible={visible}
+          text=" Searching for a ride"
+          // route={`map/${role}`}
+          role={role}
+          setShowRequestModal={setShowRequestModal}
+        />
+      )}
+      <RideRequestModal
+        visible={showRequestModal}
+        setVisible={setShowRequestModal}
+        role={role}
+      />
       <View className="w-full pb-10 flex-row items-center justify-between mt-5">
         <TouchableOpacity
           onPress={() => {
@@ -57,7 +79,11 @@ const RiderDashboard = ({ saveDetails, role }) => {
           <Text className="text-xl">Keke code: 4534</Text>
         </View>
       </View>
-      <View className="mt-10 space-y-3">
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        vertical
+        className="mt-5 space-y-4 pb-10"
+      >
         <TouchableOpacity
           className="flex-row space-x-1"
           onPress={() => {
@@ -65,7 +91,7 @@ const RiderDashboard = ({ saveDetails, role }) => {
           }}
         >
           <ArrowPathIcon size={30} color="#166534" />
-          <Text className="text-2xl text-green-800">Ride History</Text>
+          <Text className="text-xl text-green-800">Ride History</Text>
         </TouchableOpacity>
         <TouchableOpacity
           className="flex-row space-x-1"
@@ -74,7 +100,7 @@ const RiderDashboard = ({ saveDetails, role }) => {
           }}
         >
           <QueueListIcon size={30} color="#166534" />
-          <Text className="text-2xl text-green-800">Transaction History</Text>
+          <Text className="text-xl text-green-800">Transaction History</Text>
         </TouchableOpacity>
         <TouchableOpacity
           className="flex-row space-x-1"
@@ -83,7 +109,7 @@ const RiderDashboard = ({ saveDetails, role }) => {
           }}
         >
           <CurrencyDollarIcon size={30} color="#166534" />
-          <Text className="text-2xl text-green-800">Wallet</Text>
+          <Text className="text-xl text-green-800">Wallet</Text>
         </TouchableOpacity>
         <TouchableOpacity
           className="flex-row space-x-1"
@@ -92,9 +118,19 @@ const RiderDashboard = ({ saveDetails, role }) => {
           }}
         >
           <CreditCardIcon size={30} color="#166534" />
-          <Text className="text-2xl text-green-800">Payment History</Text>
+          <Text className="text-xl text-green-800">Payment History</Text>
         </TouchableOpacity>
-      </View>
+        <TouchableOpacity
+          className="rounded-md bg-green-800 mt-20 py-3"
+          onPress={() => {
+            setVisible(true);
+          }}
+        >
+          <Text className="text-xl text-center text-white">
+            Search for ride
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
     </View>
   );
 };

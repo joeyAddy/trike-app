@@ -5,7 +5,7 @@ import { TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { CheckBadgeIcon } from "react-native-heroicons/outline";
 
-const ConfirmPaymentModal = ({ visible, setVisible }) => {
+const ConfirmPaymentModal = ({ visible, setVisible, setWaiting }) => {
   const router = useRouter();
   const containerStyle = {
     backgroundColor: "white",
@@ -39,6 +39,7 @@ const ConfirmPaymentModal = ({ visible, setVisible }) => {
             <TouchableOpacity
               onPress={() => {
                 setVisible(false);
+                setWaiting(true);
               }}
               className="w-full rounded-md items-center px-5 py-3 bg-green-800"
             >

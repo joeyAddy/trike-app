@@ -8,13 +8,12 @@ import {
 import { clearLocalStorage, getDetails } from "../../utils/localStorage";
 import { SafeAreaView } from "react-native";
 import { Stack, useRouter, useLocalSearchParams } from "expo-router";
-import { Modal, PaperProvider, Portal, ProgressBar } from "react-native-paper";
+import { PaperProvider, ProgressBar } from "react-native-paper";
 import { HandThumbUpIcon, MapPinIcon } from "react-native-heroicons/solid";
 import { TextInput } from "react-native";
 import { SelectList } from "react-native-dropdown-select-list";
-import { Alert } from "react-native";
 import { ScrollView } from "react-native";
-import { ActivityIndicator } from "react-native";
+import LoadingModal from "../../components/common/LoadingModal";
 
 const Reservation = () => {
   const router = useRouter();
@@ -33,14 +32,6 @@ const Reservation = () => {
   const [rideType, setRideType] = useState("");
 
   const [visible, setVisible] = useState(false);
-
-  const containerStyle = {
-    backgroundColor: "white",
-    paddingTop: 20,
-    paddingBottom: 20,
-    margin: 30,
-    borderRadius: 8,
-  };
 
   const data = [
     { key: "1", value: "Maths Department" },
@@ -92,27 +83,14 @@ const Reservation = () => {
           }}
         />
         <View className="flex-1 px-6 pt-5">
-          <Portal>
-            <Modal
-              dismissableBackButton={true}
-              dismissable={true}
+          {role.trim() !== "" && (
+            <LoadingModal
+              setVisible={setVisible}
               visible={visible}
-              onDismiss={() => {
-                setVisible(false);
-                router.push(`/map`);
-              }}
-              contentContainerStyle={containerStyle}
-            >
-              <View className="w-3/4 bg-white shadow-2xl opacity-100 rounded-md self-center">
-                <Text className="text-center text-lg font-semibold">
-                  Searching for a ride
-                </Text>
-                <View className="items-center">
-                  <ActivityIndicator size={150} color="#166534" />
-                </View>
-              </View>
-            </Modal>
-          </Portal>
+              text=" Searching for a ride"
+              route={`map/${role}`}
+            />
+          )}
           <View className="text-center text-3xl font-bold w-full">
             <View className="w-full pb-10 flex-row items-center justify-between mt-5">
               <TouchableOpacity

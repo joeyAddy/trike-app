@@ -1,25 +1,36 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, Dimensions, Text } from "react-native";
+import { StyleSheet, View, Dimensions, Text, Alert } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
 import { SafeAreaView } from "react-native";
-import { Stack } from "expo-router";
+import { Stack, useSearchParams } from "expo-router";
 import { UserCircleIcon } from "react-native-heroicons/outline";
 import { QuestionMarkCircleIcon } from "react-native-heroicons/solid";
 import { TouchableOpacity } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { PaperProvider } from "react-native-paper";
-import CancelRideModal from "../components/common/CancelRideModal";
-import PaymentModal from "../components/common//PaymentModal";
-import ConfirmPaymentModal from "../components/common/ConfirmPaymentModal";
+import CancelRideModal from "../../components/common/CancelRideModal";
+import PaymentModal from "../../components/common/PaymentModal";
+import ConfirmPaymentModal from "../../components/common/ConfirmPaymentModal";
 import { ActivityIndicator } from "react-native";
+import LoadingModal from "../../components/common/LoadingModal";
+import { GOOGLE_MAPS_API_KEY } from "../../secrets";
 
 const MapScreen = () => {
+  const params = useSearchParams();
+  const [role, setRole] = useState("");
+
   const [location, setLocation] = useState(null);
+  const [coordinates, setCoordinates] = useState([]);
 
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [confirmedPayment, setConfirmedPayment] = useState(false);
+  const [waiting, setWaiting] = useState(false);
+
+  useEffect(() => {
+    setRole(params.role);
+  }, [params.role]);
 
   useEffect(() => {
     (async () => {
@@ -33,6 +44,42 @@ const MapScreen = () => {
       setLocation(location);
     })();
   }, []);
+
+  useEffect(() => {
+    const getDirections = async () => {
+      if (!location) return;
+      const origin = `${location.coords.latitude.toString()},${location.coords.longitude.toString()}`;
+      const destination = "37.7749,-122.4194";
+      const apiUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&key=${GOOGLE_MAPS_API_KEY}`;
+
+      try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        console.log(data, "data from request");
+        Alert.alert(JSON.stringify(data));
+        const points = data.routes[0].overview_polyline.points;
+
+        if (points) {
+          const coords = decodePolyline(points);
+          setCoordinates(coords);
+        }
+      } catch (error) {
+        console.error(error, "error from direction");
+      }
+    };
+
+    getDirections();
+  }, []);
+
+  const decodePolyline = (encoded) => {
+    const polyline = require("@mapbox/polyline");
+    const decoded = polyline.decode(encoded);
+
+    return decoded.map((point) => ({
+      latitude: point[0],
+      longitude: point[1],
+    }));
+  };
 
   return (
     <PaperProvider>
@@ -57,6 +104,13 @@ const MapScreen = () => {
               <ConfirmPaymentModal
                 visible={confirmedPayment}
                 setVisible={setConfirmedPayment}
+                setWaiting={setWaiting}
+              />
+              <LoadingModal
+                setVisible={setWaiting}
+                visible={waiting}
+                text="Waiting for Rider to accept ride"
+                route="map"
               />
               {location && (
                 <MapView
@@ -77,6 +131,13 @@ const MapScreen = () => {
                     title="My Location"
                     description="This is my current location"
                   />
+                  {coordinates.map((coordinate, index) => (
+                    <Marker
+                      key={index}
+                      coordinate={coordinate}
+                      title={`Point ${index + 1}`}
+                    />
+                  ))}
                 </MapView>
               )}
               <View className="h-4/5 relative bottom-0 space-y-4 bg-slate-50 shadow-2xl border-2 p-3 border-green-800 w-full rounded-tr-xl rounded-tl-xl">
@@ -84,8 +145,14 @@ const MapScreen = () => {
                   <View className="flex-row space-x-2">
                     <UserCircleIcon size={60} color="#166534" />
                     <View>
-                      <Text className="font-bold">Trike Owner</Text>
-                      <Text className="text-green-800">Abdul Somebody</Text>
+                      <Text className="font-bold">
+                        {role !== "student" ? "Student Details" : "Trike Owner"}
+                      </Text>
+                      <Text className="text-green-800">
+                        {role !== "student"
+                          ? "Nafisa Somebody"
+                          : "Abdul Somebody"}
+                      </Text>
                       <Text className="text-green-800">09076453532</Text>
                     </View>
                   </View>
@@ -133,18 +200,21 @@ const MapScreen = () => {
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() => {
-                      setShowPaymentModal(true);
+                      if (role !== "rider") setShowPaymentModal(true);
                     }}
                     className="w-auto rounded-md items-center px-5 py-3 bg-green-800"
                   >
-                    <Text className="text-xl text-white">Make Payment</Text>
+                    <Text className="text-xl text-white">
+                      {role === "student" ? "Make Payment" : "Start Ride"}
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>
             </View>
           ) : (
-            <View className="flex-1 items-center justify-center">
-              <ActivityIndicator size={150} color="#166534" />
+            <View className="flex-1 items-center justify-center space-y-4">
+              <Text className="text-center font-bold text-xl">Loading map</Text>
+              <ActivityIndicator size={100} color="#166534" />
             </View>
           )}
         </SafeAreaView>
