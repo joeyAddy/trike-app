@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View, Dimensions, Text, Alert } from "react-native";
-import MapView, { Marker } from "react-native-maps";
+import MapView, { Marker, Polyline } from "react-native-maps";
 import * as Location from "expo-location";
 import { SafeAreaView } from "react-native";
 import { Stack, useSearchParams } from "expo-router";
@@ -15,6 +15,9 @@ import ConfirmPaymentModal from "../../components/common/ConfirmPaymentModal";
 import { ActivityIndicator } from "react-native";
 import LoadingModal from "../../components/common/LoadingModal";
 import { GOOGLE_MAPS_API_KEY } from "../../secrets";
+import destinationIcon from "../../assets/destination.png";
+import originIcon from "../../assets/origin.png";
+import { Image } from "react-native";
 
 const MapScreen = () => {
   const params = useSearchParams();
@@ -22,6 +25,15 @@ const MapScreen = () => {
 
   const [location, setLocation] = useState(null);
   const [coordinates, setCoordinates] = useState([]);
+
+  const [origin, SetOrigin] = useState({
+    latitude: 10.511347380902507,
+    longitude: 7.416611710045729,
+  });
+  const [destination, SetDestination] = useState({
+    latitude: 10.516040124108232,
+    longitude: 7.449982116612093,
+  });
 
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -47,10 +59,7 @@ const MapScreen = () => {
 
   useEffect(() => {
     const getDirections = async () => {
-      if (!location) return;
-      const origin = `${location.coords.latitude.toString()},${location.coords.longitude.toString()}`;
-      const destination = "37.7749,-122.4194";
-      const apiUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&key=${GOOGLE_MAPS_API_KEY}`;
+      const apiUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&key=${GOOGLE_MAPS_API_KEY}`;
 
       try {
         const response = await fetch(apiUrl);
@@ -110,7 +119,6 @@ const MapScreen = () => {
                 setVisible={setWaiting}
                 visible={waiting}
                 text="Waiting for Rider to accept ride"
-                route="map"
               />
               {location && (
                 <MapView
@@ -129,15 +137,48 @@ const MapScreen = () => {
                       longitude: location.coords.longitude,
                     }}
                     title="My Location"
-                    description="This is my current location"
+                    description="This is your current location"
                   />
-                  {coordinates.map((coordinate, index) => (
-                    <Marker
-                      key={index}
-                      coordinate={coordinate}
-                      title={`Point ${index + 1}`}
+                  <Marker
+                    coordinate={{
+                      latitude: origin.latitude,
+                      longitude: origin.longitude,
+                    }}
+                    title="Origin"
+                    description="This is where your trip starts"
+                    >
+                    <Image
+                      source={originIcon}
+                      style={{
+                        resizeMode: "contain",
+                        height: 50,
+                        width: 50,
+                      }}
                     />
-                  ))}
+                  </Marker>
+                  <Marker
+                    style={styles.markerStyle}
+                    coordinate={{
+                      latitude: destination.latitude,
+                      longitude: destination.longitude,
+                    }}
+                    title="Destination"
+                    description="Your cruise ends here"
+                  >
+                    <Image
+                      source={destinationIcon}
+                      style={{
+                        resizeMode: "contain",
+                        height: 50,
+                        width: 50,
+                      }}
+                    />
+                  </Marker>
+                  <Polyline
+                    coordinates={coordinates}
+                    strokeWidth={5}
+                    strokeColor="#166534"
+                  />
                 </MapView>
               )}
               <View className="h-4/5 relative bottom-0 space-y-4 bg-slate-50 shadow-2xl border-2 p-3 border-green-800 w-full rounded-tr-xl rounded-tl-xl">
@@ -232,6 +273,10 @@ const styles = StyleSheet.create({
   map: {
     width: Dimensions.get("window").width,
     height: Dimensions.get("window").height,
+  },
+  markerStyle: {
+    width: 50,
+    height: 50,
   },
 });
 

@@ -1,8 +1,9 @@
-import { View, Text } from "react-native";
+import { View, Text, Image } from "react-native";
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native";
 import { Stack, useRouter } from "expo-router";
 import { TouchableOpacity } from "react-native";
+import image from "../assets/decision.png";
 
 const index = () => {
   const router = useRouter();
@@ -15,6 +16,9 @@ const index = () => {
         }}
       />
       <View className="flex-1 px-6 items-center justify-center space-y-10">
+        <View className="w-full h-1/3 items-center justify-center">
+          <Image source={image} className="h-[103%]  w-full" />
+        </View>
         <Text className="text-4xl font-bold text-center">
           Are you a student or driver?
         </Text>

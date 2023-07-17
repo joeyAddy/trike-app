@@ -65,7 +65,8 @@ const RideRequestModal = ({ visible, setVisible, role }) => {
             <TouchableOpacity
               onPress={() => {
                 setVisible(false);
-                if(role) router.push(`/map/${role}`)
+                if (!role) return;
+                router.push(`/map/${role}`);
               }}
               className="w-full rounded-md items-center px-5 py-3 bg-green-800"
             >

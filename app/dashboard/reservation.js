@@ -34,13 +34,19 @@ const Reservation = () => {
   const [visible, setVisible] = useState(false);
 
   const data = [
-    { key: "1", value: "Maths Department" },
-    { key: "2", value: "ICT" },
-    { key: "3", value: "IT Park" },
-    { key: "4", value: "Faculty of Arts" },
-    { key: "5", value: "Faculty of Science" },
-    { key: "6", value: "Bursary" },
-    { key: "7", value: "KASU Market" },
+    {
+      key: "10.511347380902507 7.416611710045729",
+      value: "Computer Science Department",
+    },
+    { key: "10.516040124108232 7.449982116612093", value: "ICT" },
+    { key: "10.518741799436098 7.449864250735928", value: "IT Park" },
+    { key: "10.519067483403276 7.451996385652408", value: "Faculty of Arts" },
+    {
+      key: "10.516283103777115 7.450788020352252",
+      value: "Faculty of Science",
+    },
+    { key: "10.515159253153133, 7.449784937200435", value: "PG Hostel" },
+    { key: "10.514539986770988, 7.452341632875843", value: "KASU Market" },
   ];
   const typeOfRide = [
     { key: "1", value: "Chartered" },
@@ -174,7 +180,7 @@ const Reservation = () => {
                 setSelected={(val) => setOrigin(val)}
                 data={data}
                 placeholder="Origin"
-                save="value"
+                save="key"
               />
             </View>
             <View>
@@ -226,7 +232,7 @@ const Reservation = () => {
                 setSelected={(val) => setRideType(val)}
                 data={typeOfRide}
                 placeholder="Type of Ride"
-                save="key"
+                save="value"
               />
             </View>
             <TouchableOpacity
