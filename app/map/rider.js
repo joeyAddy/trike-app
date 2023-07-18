@@ -3,18 +3,16 @@ import { StyleSheet, View, Dimensions, Text, Alert } from "react-native";
 import MapView, { Marker, Polyline } from "react-native-maps";
 import * as Location from "expo-location";
 import { SafeAreaView } from "react-native";
-import { Stack, useLocalSearchParams, useSearchParams } from "expo-router";
+import { Stack, useLocalSearchParams } from "expo-router";
 import { UserCircleIcon } from "react-native-heroicons/outline";
 import { QuestionMarkCircleIcon } from "react-native-heroicons/solid";
 import { TouchableOpacity } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { PaperProvider } from "react-native-paper";
 import CancelRideModal from "../../components/common/CancelRideModal";
-import PaymentModal from "../../components/common/PaymentModal";
 import ConfirmPaymentModal from "../../components/common/ConfirmPaymentModal";
 import { ActivityIndicator } from "react-native";
 import LoadingModal from "../../components/common/LoadingModal";
-import { GOOGLE_MAPS_API_KEY } from "../../secrets";
 import destinationIcon from "../../assets/destination.png";
 import originIcon from "../../assets/origin.png";
 import { Image } from "react-native";
@@ -26,21 +24,11 @@ const MapScreen = () => {
   const [location, setLocation] = useState(null);
   const [coordinates, setCoordinates] = useState([]);
 
-  const [origin, setOrigin] = useState({
-    latitude: parseFloat(params?.origin.split(" ")[0]),
-    longitude: parseFloat(params?.origin.split(" ")[1]),
-  });
-  const [destination, setDestination] = useState({
-    latitude: parseFloat(params?.destination.split(" ")[0]),
-    longitude: parseFloat(params?.destination.split(" ")[1]),
-  });
   const [rideInfo, setRideInfo] = useState();
   const [rideType, setRideType] = useState();
 
   const [showCancelModal, setShowCancelModal] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [confirmedPayment, setConfirmedPayment] = useState(false);
-  const [waiting, setWaiting] = useState(false);
   const [searching, setSearching] = useState(false);
 
   useEffect(() => {
@@ -69,46 +57,6 @@ const MapScreen = () => {
     if (rideInfo) console.log(rideInfo, "ride info");
   }, []);
 
-  useEffect(() => {
-    const getDirections = async () => {
-      const apiUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&key=${GOOGLE_MAPS_API_KEY}`;
-
-      try {
-        const response = await fetch(apiUrl);
-        const data = await response.json();
-        const points = data.routes[0].overview_polyline.points;
-        const legs = data.routes[0].legs[0];
-
-        if (points) {
-          const coords = decodePolyline(points);
-          setCoordinates(coords);
-        }
-
-        if (legs) setRideInfo(legs);
-      } catch (error) {
-        console.error(error, "error from direction");
-      }
-    };
-
-    if (
-      origin.latitude &&
-      origin.longitude &&
-      destination.latitude &&
-      origin.longitude
-    )
-      getDirections();
-  }, []);
-
-  const decodePolyline = (encoded) => {
-    const polyline = require("@mapbox/polyline");
-    const decoded = polyline.decode(encoded);
-
-    return decoded.map((point) => ({
-      latitude: point[0],
-      longitude: point[1],
-    }));
-  };
-
   return (
     <PaperProvider>
       <SafeAreaProvider>
@@ -124,11 +72,6 @@ const MapScreen = () => {
                 visible={showCancelModal}
                 setVisible={setShowCancelModal}
               />
-              <PaymentModal
-                visible={showPaymentModal}
-                setVisible={setShowPaymentModal}
-                setConfirmedPayment={setConfirmedPayment}
-              />
               <ConfirmPaymentModal
                 visible={confirmedPayment}
                 setVisible={setConfirmedPayment}
@@ -139,17 +82,6 @@ const MapScreen = () => {
                 visible={waiting}
                 text="Waiting for Rider to accept ride"
               />
-              {role === "student" &&
-                !coordinates &&
-                !origin &&
-                !destination &&
-                !rideType(
-                  <LoadingModal
-                    setVisible={setSearching}
-                    visible={searching}
-                    text=" Searching for a ride"
-                  />
-                )}
               {location && coordinates && rideInfo ? (
                 <View className="relative h-3/5">
                   <MapView

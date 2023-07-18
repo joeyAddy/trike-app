@@ -13,7 +13,6 @@ import { HandThumbUpIcon, MapPinIcon } from "react-native-heroicons/solid";
 import { TextInput } from "react-native";
 import { SelectList } from "react-native-dropdown-select-list";
 import { ScrollView } from "react-native";
-import LoadingModal from "../../components/common/LoadingModal";
 
 const Reservation = () => {
   const router = useRouter();
@@ -232,7 +231,7 @@ const Reservation = () => {
               onPress={() => {
                 setVisible(true);
                 router.push({
-                  pathname: `map/${role}`,
+                  pathname: `map/student`,
                   params: {
                     origin,
                     destination,

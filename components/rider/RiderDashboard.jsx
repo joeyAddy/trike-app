@@ -38,7 +38,6 @@ const RiderDashboard = ({ saveDetails, role }) => {
       <RideRequestModal
         visible={showRequestModal}
         setVisible={setShowRequestModal}
-        role={role}
       />
       <View className="w-full pb-10 flex-row items-center justify-between mt-5">
         <TouchableOpacity

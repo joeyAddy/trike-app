@@ -30,7 +30,7 @@ const ConfirmPaymentModal = ({ visible, setVisible, setWaiting }) => {
             <CheckBadgeIcon size={150} color="green" />
           </View>
           <Text className="text-center text-lg font-semibold">
-            Payment Successfully
+            Payment is Successful
           </Text>
           <Text className="text-center text-green-800 text-4xl font-bold">
             <Text className="line-through">N</Text> 550

@@ -5,7 +5,7 @@ import { TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { CheckBadgeIcon, UserCircleIcon } from "react-native-heroicons/outline";
 
-const RideRequestModal = ({ visible, setVisible, role }) => {
+const RideRequestModal = ({ visible, setVisible }) => {
   const router = useRouter();
   const containerStyle = {
     backgroundColor: "white",
@@ -65,8 +65,7 @@ const RideRequestModal = ({ visible, setVisible, role }) => {
             <TouchableOpacity
               onPress={() => {
                 setVisible(false);
-                if (!role) return;
-                router.push(`/map/${role}`);
+                router.push(`/map/student`);
               }}
               className="w-full rounded-md items-center px-5 py-3 bg-green-800"
             >
