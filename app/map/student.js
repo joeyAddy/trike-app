@@ -18,6 +18,7 @@ import { GOOGLE_MAPS_API_KEY } from "../../secrets";
 import destinationIcon from "../../assets/destination.png";
 import originIcon from "../../assets/origin.png";
 import { Image } from "react-native";
+import io from "socket.io-client";
 
 const MapScreen = () => {
   const params = useLocalSearchParams();
@@ -42,13 +43,61 @@ const MapScreen = () => {
   const [confirmedPayment, setConfirmedPayment] = useState(false);
   const [waiting, setWaiting] = useState(false);
   const [searching, setSearching] = useState(false);
+  const [match, setMatch] = useState();
+
+  const [socket, setSocket] = useState(null);
+
+  //Url to backend
+  const serverUrl = "http://localhost:8080";
+
+  const connectToSocket = () => {
+    const socketConnection = io(serverUrl);
+    setSocket(socketConnection);
+
+    // Event listeners
+    socketConnection.on("match_found", (matchedData) => {
+      // TODO: Handle the matched data (e.g., display it on the screen)
+      setMatch(matchedData);
+      console.log("Match found:", matchedData);
+    });
+  };
+
+  const shareDetailsWithSocket = (details) => {
+    if (socket) {
+      socket.emit("share_details", details);
+    }
+  };
+
+  // Call this function when the component mounts to establish the connection
+  useEffect(() => {
+    connectToSocket();
+    return () => {
+      if (socket) {
+        socket.disconnect();
+      }
+    };
+  }, []);
+
+  // Code to handle the form submission and collect details goes here
+  function handleSubmit() {
+    const details = {
+      origin,
+      coordinates,
+      rideType,
+    };
+    shareDetailsWithSocket(details);
+  }
+
+  useEffect(() => {
+    if (match != undefined) setSearching(false);
+  }, [match]);
 
   useEffect(() => {
     setRole(params.role);
   }, [params.role]);
 
   useEffect(() => {
-    if (!params.rideType) setSearching(true);
+    if (!params.rideType) return;
     setRideType(params.rideType);
   }, [params.rideType]);
 
@@ -133,23 +182,20 @@ const MapScreen = () => {
                 visible={confirmedPayment}
                 setVisible={setConfirmedPayment}
                 setWaiting={setWaiting}
+                handleSubmit={handleSubmit}
               />
               <LoadingModal
                 setVisible={setWaiting}
                 visible={waiting}
                 text="Waiting for Rider to accept ride"
               />
-              {role === "student" &&
-                !coordinates &&
-                !origin &&
-                !destination &&
-                !rideType(
-                  <LoadingModal
-                    setVisible={setSearching}
-                    visible={searching}
-                    text=" Searching for a ride"
-                  />
-                )}
+              {!match && (
+                <LoadingModal
+                  setVisible={setSearching}
+                  visible={searching}
+                  text=" Searching for a ride"
+                />
+              )}
               {location && coordinates && rideInfo ? (
                 <View className="relative h-3/5">
                   <MapView
@@ -308,7 +354,9 @@ const MapScreen = () => {
             </View>
           ) : (
             <View className="flex-1 items-center justify-center space-y-4">
-              <Text className="text-center font-bold text-xl">Loading map</Text>
+              <Text className="text-center font-bold text-xl">
+                Searching for available rider
+              </Text>
               <ActivityIndicator size={100} color="#166534" />
             </View>
           )}
