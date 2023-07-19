@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axiosInstance from "./api";
+import axios from "axios";
 
 const useAxiosPost = () => {
   const [data, setData] = useState(null);
@@ -11,7 +12,7 @@ const useAxiosPost = () => {
     setError(null);
 
     try {
-      const response = await axiosInstance.post(url, body);
+      const response = await axios.post(url, body);
       setData(response.data);
       setLoading(false);
     } catch (error) {

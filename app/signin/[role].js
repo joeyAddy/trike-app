@@ -34,6 +34,7 @@ const Signin = () => {
 
     // clearLocalStorage();
     saveDetails(form, "signupDetails");
+
     router.push(`/dashboard/${role}`);
   };
 
