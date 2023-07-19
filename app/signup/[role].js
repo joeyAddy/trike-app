@@ -6,14 +6,21 @@ import {
   TextInput,
   TouchableOpacity,
 } from "react-native";
+import * as Location from "expo-location";
 import { Stack, useRouter, useSearchParams } from "expo-router";
 import { clearLocalStorage, saveDetails } from "../../utils/localStorage";
 import { hasEmptyFields } from "../../utils/forms";
+import useAxiosPost from "../../services/useAxiosPost";
+import { ActivityIndicator } from "react-native";
+import { Alert } from "react-native";
+import server from "../../constants/server";
 
 const Signup = () => {
   const router = useRouter();
   const params = useSearchParams();
   const [role, setRole] = useState("");
+
+  const [location, setLocation] = useState();
 
   const [form, setForm] = useState({
     name: "",
@@ -22,6 +29,21 @@ const Signup = () => {
     password: "",
     confirmPassword: "",
   });
+
+  const { data, loading, error, postData } = useAxiosPost();
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        // Handle permission not granted
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location);
+    })();
+  }, []);
 
   useEffect(() => {
     setRole(params.role);
@@ -33,12 +55,26 @@ const Signup = () => {
   }, [params.role]);
 
   const handleSubmit = () => {
-    if (hasEmptyFields(form)) {
-      return;
-    }
+    // if (hasEmptyFields(form)) {
+    //   return;
+    // }
     // clearLocalStorage();
-    saveDetails(form, "signupDetails");
-    router.push(`/dashboard/${role}`);
+    // saveDetails(form);
+    if (location != undefined) {
+      form.origin = {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      };
+      form.role = role;
+      postData(`${server}user/signup`, form);
+    }
+
+    if (data) console.log(data);
+
+    if (error) {
+      console.log(JSON.stringify(error));
+    }
+    // router.push(`/dashboard/${role}`);
   };
   return (
     <SafeAreaView className="flex-1">
@@ -109,12 +145,16 @@ const Signup = () => {
             />
           </View>
           <TouchableOpacity
-            className="rounded-md bg-green-800 py-3"
+            className="rounded-md bg-green-800 item-center py-3"
             onPress={handleSubmit}
           >
-            <Text className="text-xl text-center text-white">
-              Create Account
-            </Text>
+            {loading ? (
+              <ActivityIndicator size={20} color="white" />
+            ) : (
+              <Text className="text-xl text-center text-white">
+                Create Account
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
         <View className="flex-row justify-center items-center space-x-1 pt-5">

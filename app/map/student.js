@@ -18,7 +18,7 @@ import { GOOGLE_MAPS_API_KEY } from "../../secrets";
 import destinationIcon from "../../assets/destination.png";
 import originIcon from "../../assets/origin.png";
 import { Image } from "react-native";
-import io from "socket.io-client";
+import socketIOClient from "socket.io-client";
 
 const MapScreen = () => {
   const params = useLocalSearchParams();
@@ -50,10 +50,14 @@ const MapScreen = () => {
   //Url to backend
   const serverUrl = "http://localhost:8080";
 
+  const socketConnection = socketIOClient(serverUrl, {
+    transports: ["websocket"],
+  });
   const connectToSocket = () => {
-    const socketConnection = io(serverUrl);
     setSocket(socketConnection);
-
+    socketConnection.on("connection", (socket) => {
+      console.log(socket.id, "cnnsdfsdfvsvfd");
+    });
     // Event listeners
     socketConnection.on("match_found", (matchedData) => {
       // TODO: Handle the matched data (e.g., display it on the screen)
@@ -115,7 +119,7 @@ const MapScreen = () => {
   }, []);
 
   useEffect(() => {
-    if (rideInfo) console.log(rideInfo, "ride info");
+    // if (rideInfo) console.log(rideInfo, "ride info");
   }, []);
 
   useEffect(() => {
