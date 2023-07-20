@@ -32,6 +32,10 @@ const Reservation = () => {
 
   const [placeOriginId, setPlaceOriginId] = useState(null);
   const [placeDestinationId, setPlaceDestinationId] = useState(null);
+  const [originMainText, setOriginMainText] = useState();
+  const [destinationMainText, setDestinationMainText] = useState();
+
+  const [paymentMethod, setPaymentMethod] = useState();
 
   useEffect(() => {
     if (placeOriginId == null) return;
@@ -45,7 +49,19 @@ const Reservation = () => {
           setOrigin(
             `${response.data.result.geometry.location.lat} ${response.data.result.geometry.location.lng}`
           );
-          console.log(response.data.result.geometry, "details for origin");
+          const { address_components } = response.data.result;
+          setOriginMainText(
+            `${address_components[0].long_name}, ${address_components[1].long_name}, ${address_components[2].long_name}`
+          );
+
+          console.log(
+            response.data.result.address_components[0].long_name,
+            "details for origin"
+          );
+          console.log(
+            response.data.result.address_components[2].long_name,
+            "details for origin"
+          );
         } else {
           throw new Error(response.data.error_message);
         }
@@ -68,6 +84,10 @@ const Reservation = () => {
           setDestination(
             `${response.data.result.geometry.location.lat} ${response.data.result.geometry.location.lng}`
           );
+          const { address_components } = response.data.result;
+          setDestinationMainText(
+            `${address_components[0].long_name}, ${address_components[1].long_name}, ${address_components[2].long_name}`
+          );
           console.log(response.data.result.geometry, "details for destination");
         } else {
           throw new Error(response.data.error_message);
@@ -86,6 +106,9 @@ const Reservation = () => {
         origin,
         destination,
         rideType,
+        paymentMethod,
+        originMainText,
+        destinationMainText,
         role,
       },
     });
@@ -96,6 +119,11 @@ const Reservation = () => {
     { key: "2", value: "Inter Campus" },
     { key: "3", value: "Luggage Transport" },
     { key: "4", value: "Pick up and Delivery" },
+  ];
+  const methodOfPayment = [
+    { key: "cash", value: "Cash" },
+    { key: "card", value: "Card" },
+    { key: "transfer", value: "Transfer" },
   ];
 
   useEffect(() => {
@@ -212,20 +240,37 @@ const Reservation = () => {
                 save="value"
               />
             </View>
-            <View className="rounded-md border border-solid border-yellow-300 px-5">
-              <TextInput
-                className="h-8 my-2 w-full"
-                inputMode="text"
-                secureTextEntry={true}
-                value={form.password}
-                onChangeText={(text) => setForm({ ...form, password: text })}
-                placeholder="Password"
+            <View>
+              <SelectList
+                inputStyles={{
+                  color: "#a2a2a2",
+                }}
+                dropdownTextStyles={{
+                  color: "#a2a2a2",
+                }}
+                dropdownItemStyles={{
+                  borderBottomWidth: 1,
+                  borderBottomColor: "#fde047",
+                }}
+                boxStyles={{
+                  borderRadius: 6,
+                  borderColor: "#fde047",
+                }}
+                dropdownStyles={{
+                  borderRadius: 6,
+                  borderColor: "#fde047",
+                }}
+                setSelected={(val) => setPaymentMethod(val)}
+                data={methodOfPayment}
+                placeholder="Payment Method"
+                save="value"
               />
             </View>
+
             <TouchableOpacity
-              disabled={!origin || !destination || !rideType}
+              disabled={!origin || !destination || !rideType || !paymentMethod}
               className={`${
-                !origin || !destination || !rideType
+                !origin || !destination || !rideType || !paymentMethod
                   ? "opacity-50 cursor-not-allowed"
                   : ""
               } rounded-md bg-green-800 mt-20 py-3`}

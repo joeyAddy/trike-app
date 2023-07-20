@@ -5,7 +5,7 @@ import { TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { CheckBadgeIcon, UserCircleIcon } from "react-native-heroicons/outline";
 
-const RideRequestModal = ({ visible, setVisible }) => {
+const RideRequestModal = ({ visible, setVisible, ride }) => {
   const router = useRouter();
   const containerStyle = {
     backgroundColor: "white",

@@ -4,10 +4,12 @@ import { Divider, Modal, Portal } from "react-native-paper";
 import { TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 
-const PaymentModal = ({ visible, setVisible, setConfirmedPayment }) => {
-  const [cash, setCash] = useState(false);
-  const [card, setCard] = useState(false);
-  const [transfer, setTransfer] = useState(false);
+const PaymentModal = ({
+  visible,
+  setVisible,
+  setConfirmedPayment,
+  paymentMethod,
+}) => {
   const router = useRouter();
   const containerStyle = {
     backgroundColor: "white",
@@ -34,76 +36,73 @@ const PaymentModal = ({ visible, setVisible, setConfirmedPayment }) => {
           <Text className="text-center text-lg font-semibold">
             Select Payment Method
           </Text>
-          <View className={`flex-row justify-between ${!transfer && "flex-1"}`}>
+          <View
+            className={`flex-row justify-between ${
+              paymentMethod !== "transfer" && "flex-1"
+            }`}
+          >
             <TouchableOpacity
-              onPress={() => {
-                setCash(true);
-                setCard(false);
-                setTransfer(false);
-                // setVisible(false);
-              }}
+              onPress={() => {}}
               className={`${
-                cash === true ? "bg-yellow-500" : "bg-green-800"
+                paymentMethod === "cash" ? "bg-yellow-500" : "bg-green-800"
               } h-20 w-20 relative rounded-md items-center p-3`}
             >
-              {cash && (
+              {paymentMethod === "cash" && (
                 <View className="absolute -bottom-3 w-[145%] border-b-2 border-yellow-500"></View>
               )}
               <View className="absolute right-2 top-2 bg-white rounded-full h-5 w-5"></View>
               <Text
                 className={`${
-                  cash === true ? "text-green-800" : "text-yellow-500"
+                  paymentMethod === "cash"
+                    ? "text-green-800"
+                    : "text-yellow-500"
                 } text-md mt-auto`}
               >
                 Cash
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => {
-                setCard(true);
-                setCash(false);
-                setTransfer(false);
-              }}
+              onPress={() => {}}
               className={`${
-                card === true ? "bg-yellow-500" : "bg-green-800"
+                paymentMethod === "card" ? "bg-yellow-500" : "bg-green-800"
               } h-20 w-20 relative rounded-md items-center p-3`}
             >
-              {card && (
+              {paymentMethod === "card" && (
                 <View className="absolute -bottom-3 w-[145%] border-b-2 border-yellow-500"></View>
               )}
               <View className="absolute right-2 top-2 bg-white rounded-full h-5 w-5"></View>
               <Text
                 className={`${
-                  card === true ? "text-green-800" : "text-yellow-500"
+                  paymentMethod === "card"
+                    ? "text-green-800"
+                    : "text-yellow-500"
                 } text-md mt-auto`}
               >
                 Card
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => {
-                setCard(false);
-                setCash(false);
-                setTransfer(true);
-              }}
+              onPress={() => {}}
               className={`${
-                transfer === true ? "bg-yellow-500" : "bg-green-800"
+                paymentMethod === "transfer" ? "bg-yellow-500" : "bg-green-800"
               } h-20 w-20 relative rounded-md items-center p-3`}
             >
-              {transfer && (
+              {paymentMethod === "transfer" && (
                 <View className="absolute -bottom-3 w-[145%] border-b-2 border-yellow-500"></View>
               )}
               <View className="absolute right-2 top-2 bg-white rounded-full h-5 w-5"></View>
               <Text
                 className={`${
-                  transfer === true ? "text-green-800" : "text-yellow-500"
+                  paymentMethod === "transfer"
+                    ? "text-green-800"
+                    : "text-yellow-500"
                 } text-md mt-auto`}
               >
                 Transfer
               </Text>
             </TouchableOpacity>
           </View>
-          {transfer && (
+          {paymentMethod === "transfer" && (
             <View className="flex-1">
               <Text className="uppercase text-lg font-bold text-green-800">
                 Account Details

@@ -102,6 +102,7 @@ const MapScreen = () => {
   useEffect(() => {
     setRole(params.role);
     Alert.alert(params.role);
+    Alert.alert(params.originMainText);
   }, [params.role]);
 
   useEffect(() => {
@@ -185,6 +186,7 @@ const MapScreen = () => {
                 visible={showPaymentModal}
                 setVisible={setShowPaymentModal}
                 setConfirmedPayment={setConfirmedPayment}
+                paymentMethod={params.paymentMethod}
               />
               <ConfirmPaymentModal
                 visible={confirmedPayment}
@@ -319,7 +321,9 @@ const MapScreen = () => {
                     <View className="space-y-3">
                       <View>
                         <Text className="font-bold">From</Text>
-                        <Text className="text-green-800">Kasu 1st gate</Text>
+                        <Text className="text-green-800 w-1/2">
+                          {params.originMainText}
+                        </Text>
                       </View>
                       <View>
                         <Text className="font-bold">Type of Ride</Text>
@@ -329,7 +333,9 @@ const MapScreen = () => {
                     <View className="space-y-3">
                       <View>
                         <Text className="font-bold">To</Text>
-                        <Text className="text-green-800">Netherlands</Text>
+                        <Text className="text-green-800 w-1/2">
+                          {params.destinationMainText}
+                        </Text>
                       </View>
                       <View>
                         <Text className="font-bold">Amount</Text>

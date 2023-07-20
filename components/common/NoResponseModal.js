@@ -3,8 +3,18 @@ import React from "react";
 import { Modal, Portal } from "react-native-paper";
 import { TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
+import { ExclamationCircleIcon } from "react-native-heroicons/outline";
+import { ActivityIndicator } from "react-native";
 
-const CancelRideModal = ({ visible, setVisible }) => {
+const NoResponseModal = ({
+  visible,
+  setVisible,
+  text,
+  buttonText,
+  buttonActionText,
+  handleSubmit,
+  spinnerState,
+}) => {
   const router = useRouter();
   const containerStyle = {
     backgroundColor: "white",
@@ -26,24 +36,25 @@ const CancelRideModal = ({ visible, setVisible }) => {
       >
         <View className="w-3/4 space-y-4 bg-white shadow-2xl opacity-100 rounded-md self-center">
           <Text className="text-center text-lg font-semibold">
-            Are you sure you want to cancel this ride?
+            {spinnerState ? buttonActionText : text}
           </Text>
-          <View className="flex-row space-x-1 justify-between items-center">
+          <View className="items-center w-full">
+            {spinnerState ? (
+              <ActivityIndicator size={150} color="green" />
+            ) : (
+              <ExclamationCircleIcon size={150} color="green" />
+            )}
+          </View>
+          <View className="w-full items-center">
             <TouchableOpacity
               onPress={() => {
-                router.back();
-              }}
-              className="w-auto px-5 rounded-md items-center py-3 bg-red-800"
-            >
-              <Text className="text-xl text-white">Yes</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                setVisible(false);
+                handleSubmit();
               }}
               className="w-auto rounded-md items-center px-5 py-3 bg-green-800"
             >
-              <Text className="text-xl text-white">No</Text>
+              <Text className="text-xl text-white">
+                {spinnerState ? buttonActionText : buttonText}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -52,4 +63,4 @@ const CancelRideModal = ({ visible, setVisible }) => {
   );
 };
 
-export default CancelRideModal;
+export default NoResponseModal;

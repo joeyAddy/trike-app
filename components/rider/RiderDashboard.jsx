@@ -17,6 +17,7 @@ import { useEffect, useState } from "react";
 import { ScrollView } from "react-native-gesture-handler";
 import RideRequestModal from "./RideRequestModal";
 import RidesListModal from "./RidesListModal";
+import NoResponseModal from "../common/NoResponseModal";
 import useAxiosFetch from "../../services/useAxiosFetch";
 import useAxiosPost from "../../services/useAxiosPost";
 import { ActivityIndicator } from "react-native";
@@ -30,6 +31,7 @@ const RiderDashboard = ({ saveDetails, role }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showListModal, setShowListModal] = useState(false);
+  const [showNoResponseModal, setShowNoResponseModal] = useState(false);
 
   const { data, loading, error, postData } = useAxiosPost();
 
@@ -97,6 +99,7 @@ const RiderDashboard = ({ saveDetails, role }) => {
       if (response) {
         setVisible(false);
         setRides(response.data.data[0]);
+        setShowListModal(false);
         setShowRequestModal(true);
         console.log(response.data.data[0]);
       } else {
@@ -105,9 +108,7 @@ const RiderDashboard = ({ saveDetails, role }) => {
       }
     } catch (error) {
       setVisible(false);
-      Alert.alert(
-        "No Available rides at the moment please keep driving while we are searching"
-      );
+      setShowNoResponseModal(true);
       console.error("Error fetching rider profile:", JSON.stringify(error));
       return null;
     }
@@ -125,11 +126,20 @@ const RiderDashboard = ({ saveDetails, role }) => {
           role={role}
         />
       )}
+      <NoResponseModal
+        visible={showNoResponseModal}
+        setVisible={setShowNoResponseModal}
+        text="No rides available in this location!"
+        buttonText="Search Again"
+        buttonActionText="Searching..."
+        handleSubmit={handleSearchSubmit}
+        spinnerState={visible}
+      />
       {selectedRide && (
         <RideRequestModal
           visible={showRequestModal}
           setVisible={setShowRequestModal}
-          rides={selectedRide}
+          ride={selectedRide}
         />
       )}
       {rides && selectedRide && (
