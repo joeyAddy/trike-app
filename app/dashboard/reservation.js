@@ -1,8 +1,7 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, TextInput } from "react-native";
 import React, { useEffect, useState } from "react";
 import {
   ArrowRightOnRectangleIcon,
-  MagnifyingGlassIcon,
   UserCircleIcon,
 } from "react-native-heroicons/outline";
 import { clearLocalStorage, getDetails } from "../../utils/localStorage";
@@ -10,9 +9,10 @@ import { SafeAreaView } from "react-native";
 import { Stack, useRouter, useLocalSearchParams } from "expo-router";
 import { PaperProvider, ProgressBar } from "react-native-paper";
 import { HandThumbUpIcon, MapPinIcon } from "react-native-heroicons/solid";
-import { TextInput } from "react-native";
 import { SelectList } from "react-native-dropdown-select-list";
-import { ScrollView } from "react-native";
+import GooglePlacesAutocomplete from "../../components/common/GoogleAutocomplete";
+import { GOOGLE_MAPS_API_KEY } from "../../secrets";
+import axios from "axios";
 
 const Reservation = () => {
   const router = useRouter();
@@ -30,23 +30,67 @@ const Reservation = () => {
   const [origin, setOrigin] = useState("");
   const [rideType, setRideType] = useState("");
 
-  const [visible, setVisible] = useState(false);
+  const [placeOriginId, setPlaceOriginId] = useState(null);
+  const [placeDestinationId, setPlaceDestinationId] = useState(null);
 
-  const data = [
-    {
-      key: "10.511347380902507 7.416611710045729",
-      value: "Computer Science Department",
-    },
-    { key: "10.516040124108232 7.449982116612093", value: "ICT" },
-    { key: "10.518741799436098 7.449864250735928", value: "IT Park" },
-    { key: "10.519067483403276 7.451996385652408", value: "Faculty of Arts" },
-    {
-      key: "10.516283103777115 7.450788020352252",
-      value: "Faculty of Science",
-    },
-    { key: "10.515159253153133, 7.449784937200435", value: "PG Hostel" },
-    { key: "10.514539986770988, 7.452341632875843", value: "KASU Market" },
-  ];
+  useEffect(() => {
+    if (placeOriginId == null) return;
+    (async () => {
+      try {
+        const response = await axios.get(
+          `https://maps.googleapis.com/maps/api/place/details/json?key=${GOOGLE_MAPS_API_KEY}&place_id=${placeOriginId}`
+        );
+
+        if (response.data.status === "OK") {
+          setOrigin(
+            `${response.data.result.geometry.location.lat} ${response.data.result.geometry.location.lng}`
+          );
+          console.log(response.data.result.geometry, "details for origin");
+        } else {
+          throw new Error(response.data.error_message);
+        }
+      } catch (error) {
+        console.error("Error fetching place details:", error);
+        return null;
+      }
+    })();
+  }, [placeOriginId]);
+
+  useEffect(() => {
+    if (placeDestinationId == null) return;
+    (async () => {
+      try {
+        const response = await axios.get(
+          `https://maps.googleapis.com/maps/api/place/details/json?key=${GOOGLE_MAPS_API_KEY}&place_id=${placeDestinationId}`
+        );
+
+        if (response.data.status === "OK") {
+          setDestination(
+            `${response.data.result.geometry.location.lat} ${response.data.result.geometry.location.lng}`
+          );
+          console.log(response.data.result.geometry, "details for destination");
+        } else {
+          throw new Error(response.data.error_message);
+        }
+      } catch (error) {
+        console.error("Error fetching place details:", error);
+        return null;
+      }
+    })();
+  }, [placeDestinationId]);
+
+  const handleSubmit = () => {
+    router.push({
+      pathname: `map/student`,
+      params: {
+        origin,
+        destination,
+        rideType,
+        role,
+      },
+    });
+  };
+
   const typeOfRide = [
     { key: "1", value: "Chartered" },
     { key: "2", value: "Inter Campus" },
@@ -66,16 +110,12 @@ const Reservation = () => {
 
   useEffect(() => {
     (async () => {
-      let signInInfo = null;
-      let signUpInfo = null;
+      let userDetails = null;
 
-      signUpInfo = await getDetails("signupDetails");
-      signInInfo = await getDetails("signinDetails");
+      userDetails = await getDetails("userDetails");
 
-      if (signUpInfo != null) {
-        setSaveDetails(signUpInfo);
-      } else if (signInInfo != null) {
-        setSaveDetails(signInInfo);
+      if (userDetails != null) {
+        setSaveDetails(userDetails);
       }
     })();
   }, []);
@@ -131,73 +171,19 @@ const Reservation = () => {
               <Text className="text-green-800">Destination</Text>
             </View>
           </View>
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            className="space-y-8 mb-10"
-          >
-            <View className="rounded-md flex-row items-center border border-solid border-yellow-300 px-5">
-              <TextInput
-                className="h-8 my-2 flex-1"
-                inputMode="search"
-                secureTextEntry={true}
-                // value={destination}
-                // onChangeText={(text) => setDestination(text)}
-                placeholder="Search Destination"
-              />
-              <TouchableOpacity>
-                <MagnifyingGlassIcon size={20} color="#166534" />
-              </TouchableOpacity>
-            </View>
+          <View className="space-y-8 mb-10">
             <View>
-              <SelectList
-                inputStyles={{
-                  color: "#a2a2a2",
-                }}
-                dropdownTextStyles={{
-                  color: "#a2a2a2",
-                }}
-                dropdownItemStyles={{
-                  borderBottomWidth: 1,
-                  borderBottomColor: "#fde047",
-                }}
-                boxStyles={{
-                  borderRadius: 6,
-                  borderColor: "#fde047",
-                }}
-                dropdownStyles={{
-                  borderRadius: 6,
-                  borderColor: "#fde047",
-                }}
-                setSelected={(val) => setOrigin(val)}
-                data={data}
-                placeholder="Origin"
-                save="key"
+              <GooglePlacesAutocomplete
+                apiKey={GOOGLE_MAPS_API_KEY}
+                setPlaceId={setPlaceOriginId}
+                placeholderText="origin"
               />
             </View>
             <View>
-              <SelectList
-                inputStyles={{
-                  color: "#a2a2a2",
-                }}
-                dropdownTextStyles={{
-                  color: "#a2a2a2",
-                }}
-                dropdownItemStyles={{
-                  borderBottomWidth: 1,
-                  borderBottomColor: "#fde047",
-                }}
-                boxStyles={{
-                  borderRadius: 6,
-                  borderColor: "#fde047",
-                }}
-                dropdownStyles={{
-                  borderRadius: 6,
-                  borderColor: "#fde047",
-                }}
-                setSelected={(val) => setDestination(val)}
-                data={data}
-                placeholder="Destination"
-                save="key"
+              <GooglePlacesAutocomplete
+                apiKey={GOOGLE_MAPS_API_KEY}
+                setPlaceId={setPlaceDestinationId}
+                placeholderText="destination"
               />
             </View>
             <View>
@@ -226,25 +212,30 @@ const Reservation = () => {
                 save="value"
               />
             </View>
+            <View className="rounded-md border border-solid border-yellow-300 px-5">
+              <TextInput
+                className="h-8 my-2 w-full"
+                inputMode="text"
+                secureTextEntry={true}
+                value={form.password}
+                onChangeText={(text) => setForm({ ...form, password: text })}
+                placeholder="Password"
+              />
+            </View>
             <TouchableOpacity
-              className="rounded-md bg-green-800 mt-20 py-3"
-              onPress={() => {
-                setVisible(true);
-                router.push({
-                  pathname: `map/student`,
-                  params: {
-                    origin,
-                    destination,
-                    rideType,
-                  },
-                });
-              }}
+              disabled={!origin || !destination || !rideType}
+              className={`${
+                !origin || !destination || !rideType
+                  ? "opacity-50 cursor-not-allowed"
+                  : ""
+              } rounded-md bg-green-800 mt-20 py-3`}
+              onPress={handleSubmit}
             >
               <Text className="text-xl text-center text-white">
                 Search for ride
               </Text>
             </TouchableOpacity>
-          </ScrollView>
+          </View>
         </View>
       </SafeAreaView>
     </PaperProvider>

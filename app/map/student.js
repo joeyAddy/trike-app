@@ -101,6 +101,7 @@ const MapScreen = () => {
 
   useEffect(() => {
     setRole(params.role);
+    Alert.alert(params.role);
   }, [params.role]);
 
   useEffect(() => {
