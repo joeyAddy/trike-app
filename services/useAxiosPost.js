@@ -21,7 +21,7 @@ const useAxiosPost = () => {
     }
   };
 
-  return { data, loading, error, postData };
+  return { data, loading, error, setLoading, postData };
 };
 
 export default useAxiosPost;

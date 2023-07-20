@@ -12,7 +12,7 @@ import { clearLocalStorage, saveDetails } from "../../utils/localStorage";
 import { hasEmptyFields } from "../../utils/forms";
 import { ActivityIndicator } from "react-native";
 import server from "../../constants/server";
-import usePost from "../../services/usePost";
+import useAxiosPost from "../../services/useAxiosPost";
 
 const Signup = () => {
   const router = useRouter();
@@ -25,11 +25,12 @@ const Signup = () => {
     name: "",
     matricNo: "",
     email: "",
+    phone: "",
     password: "",
     confirmPassword: "",
   });
 
-  const { response, error, isLoading, postRequest } = usePost();
+  const { data, loading, error, setLoading, postData } = useAxiosPost();
 
   useEffect(() => {
     (async () => {
@@ -53,13 +54,15 @@ const Signup = () => {
     }
   }, [params.role]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // if (hasEmptyFields(form)) {
     //   return;
     // }
-    // clearLocalStorage();
-    // saveDetails(form);
-    if (location != undefined) {
+
+    if (location == undefined) {
+      setLoading(true);
+      return;
+    } else {
       form.origin = {
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
@@ -67,19 +70,30 @@ const Signup = () => {
       form.role = role;
       console.log(form);
       // Call the custom hook's postRequest function to make the API request
-      postRequest(`${server}user/signup`, form);
+      await postData(`${server}user/signup`, form);
 
-      if (isLoading) {
+      if (loading) {
         console.log("Loading...");
-      } else if (error) {
-        console.error("Error:", error.message);
-        console.log(JSON.stringify(error));
-      } else if (response) {
-        console.log("Response:", response);
       }
     }
-    // router.push(`/dashboard/${role}`);
   };
+
+  useEffect(() => {
+    if (error) {
+      console.error("Error:", error.message);
+      console.log(JSON.stringify(error));
+    }
+  }, [error]);
+
+  useEffect(() => {
+    if (data) {
+      saveDetails(data.data.user, "userDetails");
+      console.log("data");
+      router.push(`/dashboard/${role}`);
+      console.log("Response:", data);
+    }
+  }, [data]);
+
   return (
     <SafeAreaView className="flex-1">
       <Stack.Screen
@@ -92,7 +106,7 @@ const Signup = () => {
         <Text className="text-center text-3xl font-bold w-full mt-20">
           Sign up
         </Text>
-        <View className="pt-16 space-y-10">
+        <View className="pt-16 space-y-8">
           <View className="rounded-md border border-solid border-yellow-300 px-5">
             <TextInput
               autoCapitalize="words"
@@ -101,6 +115,7 @@ const Signup = () => {
               value={form.name}
               onChangeText={(text) => setForm({ ...form, name: text })}
               placeholder="Full Name"
+              autoComplete="name"
             />
           </View>
           {role === "student" && (
@@ -122,6 +137,19 @@ const Signup = () => {
               value={form.email}
               onChangeText={(text) => setForm({ ...form, email: text })}
               placeholder="Email"
+              autoComplete="email"
+            />
+          </View>
+          <View className="rounded-md border border-solid border-yellow-300 px-5">
+            <TextInput
+              className="h-8 my-2 w-full"
+              required
+              inputMode="tel"
+              maxLength={14}
+              value={form.number}
+              onChangeText={(text) => setForm({ ...form, phone: text })}
+              placeholder="Phone number"
+              autoComplete="tel"
             />
           </View>
           <View className="rounded-md border border-solid border-yellow-300 px-5">
@@ -152,7 +180,7 @@ const Signup = () => {
             className="rounded-md bg-green-800 item-center py-3"
             onPress={handleSubmit}
           >
-            {isLoading ? (
+            {loading ? (
               <ActivityIndicator size={20} color="white" />
             ) : (
               <Text className="text-xl text-center text-white">

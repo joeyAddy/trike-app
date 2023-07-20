@@ -45,16 +45,12 @@ const Dashboard = () => {
       setRole(params.role);
       console.log(params.role, "role");
 
-      let signInInfo = null;
-      let signUpInfo = null;
+      let userDetails = null;
 
-      signUpInfo = await getDetails("signupDetails");
-      signInInfo = await getDetails("signinDetails");
+      userDetails = await getDetails("userDetails");
 
-      if (signUpInfo != null) {
-        setSaveDetails(signUpInfo);
-      } else if (signInInfo != null) {
-        setSaveDetails(signInInfo);
+      if (userDetails != null) {
+        setSaveDetails(userDetails);
       }
     })();
   }, [params.role]);

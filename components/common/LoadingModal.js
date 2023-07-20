@@ -4,14 +4,7 @@ import { Modal, Portal } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { ActivityIndicator } from "react-native";
 
-const LoadingModal = ({
-  visible,
-  setVisible,
-  text,
-  route,
-  setShowRequestModal,
-  role,
-}) => {
+const LoadingModal = ({ visible, setVisible, text, route, role }) => {
   const router = useRouter();
   const containerStyle = {
     backgroundColor: "white",
@@ -21,14 +14,6 @@ const LoadingModal = ({
     borderRadius: 8,
   };
 
-  useEffect(() => {
-    // setTimeout(() => {
-    setVisible(false);
-    if (role && role === "rider") setShowRequestModal(true);
-    if (!route) return;
-    router.push(`/${route}`);
-    // }, 2000);
-  }, []);
   return (
     <Portal>
       <Modal
