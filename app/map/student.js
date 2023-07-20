@@ -52,6 +52,9 @@ const MapScreen = () => {
 
   const socketConnection = socketIOClient(serverUrl, {
     transports: ["websocket"],
+    extraHeaders: {
+      "Access-Control-Allow-Origin": "*",
+    },
   });
   const connectToSocket = () => {
     setSocket(socketConnection);

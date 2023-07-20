@@ -10,10 +10,9 @@ import * as Location from "expo-location";
 import { Stack, useRouter, useSearchParams } from "expo-router";
 import { clearLocalStorage, saveDetails } from "../../utils/localStorage";
 import { hasEmptyFields } from "../../utils/forms";
-import useAxiosPost from "../../services/useAxiosPost";
 import { ActivityIndicator } from "react-native";
-import { Alert } from "react-native";
 import server from "../../constants/server";
+import usePost from "../../services/usePost";
 
 const Signup = () => {
   const router = useRouter();
@@ -30,7 +29,7 @@ const Signup = () => {
     confirmPassword: "",
   });
 
-  const { data, loading, error, postData } = useAxiosPost();
+  const { response, error, isLoading, postRequest } = usePost();
 
   useEffect(() => {
     (async () => {
@@ -66,13 +65,18 @@ const Signup = () => {
         longitude: location.coords.longitude,
       };
       form.role = role;
-      postData(`${server}user/signup`, form);
-    }
+      console.log(form);
+      // Call the custom hook's postRequest function to make the API request
+      postRequest(`${server}user/signup`, form);
 
-    if (data) console.log(data);
-
-    if (error) {
-      console.log(JSON.stringify(error));
+      if (isLoading) {
+        console.log("Loading...");
+      } else if (error) {
+        console.error("Error:", error.message);
+        console.log(JSON.stringify(error));
+      } else if (response) {
+        console.log("Response:", response);
+      }
     }
     // router.push(`/dashboard/${role}`);
   };
@@ -148,7 +152,7 @@ const Signup = () => {
             className="rounded-md bg-green-800 item-center py-3"
             onPress={handleSubmit}
           >
-            {loading ? (
+            {isLoading ? (
               <ActivityIndicator size={20} color="white" />
             ) : (
               <Text className="text-xl text-center text-white">
