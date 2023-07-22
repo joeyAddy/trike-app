@@ -21,6 +21,7 @@ const PaymentModal = ({
     height: "75%",
     borderRadius: 8,
   };
+  console.log(paymentMethod);
   return (
     <Portal>
       <Modal
@@ -44,16 +45,16 @@ const PaymentModal = ({
             <TouchableOpacity
               onPress={() => {}}
               className={`${
-                paymentMethod === "cash" ? "bg-yellow-500" : "bg-green-800"
+                paymentMethod === "Cash" ? "bg-yellow-500" : "bg-green-800"
               } h-20 w-20 relative rounded-md items-center p-3`}
             >
-              {paymentMethod === "cash" && (
+              {paymentMethod === "Cash" && (
                 <View className="absolute -bottom-3 w-[145%] border-b-2 border-yellow-500"></View>
               )}
               <View className="absolute right-2 top-2 bg-white rounded-full h-5 w-5"></View>
               <Text
                 className={`${
-                  paymentMethod === "cash"
+                  paymentMethod === "Cash"
                     ? "text-green-800"
                     : "text-yellow-500"
                 } text-md mt-auto`}
@@ -64,16 +65,16 @@ const PaymentModal = ({
             <TouchableOpacity
               onPress={() => {}}
               className={`${
-                paymentMethod === "card" ? "bg-yellow-500" : "bg-green-800"
+                paymentMethod === "Card" ? "bg-yellow-500" : "bg-green-800"
               } h-20 w-20 relative rounded-md items-center p-3`}
             >
-              {paymentMethod === "card" && (
+              {paymentMethod === "Card" && (
                 <View className="absolute -bottom-3 w-[145%] border-b-2 border-yellow-500"></View>
               )}
               <View className="absolute right-2 top-2 bg-white rounded-full h-5 w-5"></View>
               <Text
                 className={`${
-                  paymentMethod === "card"
+                  paymentMethod === "Card"
                     ? "text-green-800"
                     : "text-yellow-500"
                 } text-md mt-auto`}
@@ -84,16 +85,16 @@ const PaymentModal = ({
             <TouchableOpacity
               onPress={() => {}}
               className={`${
-                paymentMethod === "transfer" ? "bg-yellow-500" : "bg-green-800"
+                paymentMethod === "Transfer" ? "bg-yellow-500" : "bg-green-800"
               } h-20 w-20 relative rounded-md items-center p-3`}
             >
-              {paymentMethod === "transfer" && (
+              {paymentMethod === "Transfer" && (
                 <View className="absolute -bottom-3 w-[145%] border-b-2 border-yellow-500"></View>
               )}
               <View className="absolute right-2 top-2 bg-white rounded-full h-5 w-5"></View>
               <Text
                 className={`${
-                  paymentMethod === "transfer"
+                  paymentMethod === "Transfer"
                     ? "text-green-800"
                     : "text-yellow-500"
                 } text-md mt-auto`}

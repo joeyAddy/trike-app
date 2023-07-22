@@ -19,12 +19,12 @@ import { Image } from "react-native";
 
 const MapScreen = () => {
   const params = useLocalSearchParams();
-  const [role, setRole] = useState("");
 
   const [location, setLocation] = useState(null);
   const [coordinates, setCoordinates] = useState([]);
 
   const [rideInfo, setRideInfo] = useState();
+  const [rideTimeLocation, setRideTimeLocation] = useState();
   const [rideType, setRideType] = useState();
 
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -32,13 +32,16 @@ const MapScreen = () => {
   const [searching, setSearching] = useState(false);
 
   useEffect(() => {
-    setRole(params.role);
-  }, [params.role]);
-
-  useEffect(() => {
-    if (!params.rideType) setSearching(true);
-    setRideType(params.rideType);
-  }, [params.rideType]);
+    if (!params) {
+      setSearching(true);
+      return;
+    }
+    console.log(params.ride.item[0], "ride details");
+    // setCoordinates(params.item[0].ride.coordinates);
+    // setRideInfo(params.item[0].ride);
+    // setRideType(params.item[0].ride?.rideType);
+    // setRideTimeLocation(params.item[0].ride?.rideInfo);
+  }, [params.ride]);
 
   useEffect(() => {
     (async () => {
@@ -66,16 +69,11 @@ const MapScreen = () => {
               headerShown: false,
             }}
           />
-          {location && coordinates && rideType ? (
+          {searching === true ? (
             <View style={styles.container}>
               <CancelRideModal
                 visible={showCancelModal}
                 setVisible={setShowCancelModal}
-              />
-              <ConfirmPaymentModal
-                visible={confirmedPayment}
-                setVisible={setConfirmedPayment}
-                setWaiting={setWaiting}
               />
               <LoadingModal
                 setVisible={setWaiting}
@@ -104,11 +102,11 @@ const MapScreen = () => {
                     />
                     <Marker
                       coordinate={{
-                        latitude: origin.latitude,
-                        longitude: origin.longitude,
+                        latitude: rideInfo.origin.latitude,
+                        longitude: rideInfo.origin.longitude,
                       }}
                       title="Origin"
-                      description={rideInfo.start_address}
+                      description={rideInfo.from}
                     >
                       <Image
                         source={originIcon}
@@ -122,11 +120,11 @@ const MapScreen = () => {
                     <Marker
                       style={styles.markerStyle}
                       coordinate={{
-                        latitude: destination.latitude,
-                        longitude: destination.longitude,
+                        latitude: rideInfo.destination.latitude,
+                        longitude: rideInfo.destination.longitude,
                       }}
                       title="Destination"
-                      description={rideInfo.end_address}
+                      description={rideInfo.to}
                     >
                       <Image
                         source={destinationIcon}
@@ -148,76 +146,91 @@ const MapScreen = () => {
                       strokeColor="#93c5fd"
                     />
                   </MapView>
-                  {rideInfo && (
+                  {/* {rideTimeLocation && (
                     <View className="absolute fill-blue-300 bottom-6 left-4 bg-white p-3 shadow-2xl shadow-black rounded-lg">
                       <Text className="font-bold text-green-800 text-lg">
                         Ride Information
                       </Text>
                       <View className="space-y-1">
                         <Text className="font-bold text-green-800 text-md">
-                          Distance: <Text>{rideInfo.distance?.text}</Text>
+                          Distance: <Text>{rideTimeLocation.distance?.text}</Text>
                         </Text>
                         <Text className="font-bold text-green-800 text-md">
-                          Duration: <Text>{rideInfo.duration?.text}</Text>
+                          Duration: <Text>{rideTimeLocation.duration?.text}</Text>
                         </Text>
                       </View>
                     </View>
-                  )}
+                  )} */}
                 </View>
               ) : (
                 <View className=" h-3/5 flex-1 items-center justify-center space-y-4">
                   <ActivityIndicator size={40} color="#166534" />
                 </View>
               )}
+
               <View className="h-2/5 relative bottom-0 space-y-4 bg-slate-50 shadow-2xl border-2 p-3 border-green-800 w-full rounded-tr-xl rounded-tl-xl">
-                <View className="flex-row justify-between items-center">
-                  <View className="flex-row space-x-2">
-                    <UserCircleIcon size={60} color="#166534" />
-                    <View>
-                      <Text className="font-bold">
-                        {role !== "student" ? "Student Details" : "Trike Owner"}
-                      </Text>
-                      <Text className="text-green-800">
-                        {role !== "student"
-                          ? "Nafisa Somebody"
-                          : "Abdul Somebody"}
-                      </Text>
-                      <Text className="text-green-800">09076453532</Text>
-                    </View>
-                  </View>
-                  <View>
-                    <QuestionMarkCircleIcon size={60} color="orange" />
-                  </View>
-                </View>
-                <Text className="text-center uppercase text-green-800 text-xl">
-                  Ride details
-                </Text>
-                <View className="flex-row items-center justify-between">
-                  <View className="flex-row justify-between items-center w-full">
-                    <View className="space-y-3">
+                {!rideInfo.user === null ? (
+                  <>
+                    <ActivityIndicator size={40} color="#166534" />
+                    <Text className="text-center text-orange-800 font-bold">
+                      Searching for rider...
+                    </Text>
+                  </>
+                ) : (
+                  <View className="flex-row justify-between items-center">
+                    <View className="flex-row space-x-2">
+                      <UserCircleIcon size={60} color="#166534" />
                       <View>
-                        <Text className="font-bold">From</Text>
-                        <Text className="text-green-800">Kasu 1st gate</Text>
-                      </View>
-                      <View>
-                        <Text className="font-bold">Type of Ride</Text>
-                        <Text className="text-green-800">{rideType}</Text>
-                      </View>
-                    </View>
-                    <View className="space-y-3">
-                      <View>
-                        <Text className="font-bold">To</Text>
-                        <Text className="text-green-800">Netherlands</Text>
-                      </View>
-                      <View>
-                        <Text className="font-bold">Amount</Text>
-                        <Text className="text-green-800 text-4xl font-bold">
-                          <Text className="line-through">N</Text> 550
+                        <Text className="font-bold">Student Details</Text>
+                        <Text className="text-green-800">
+                          {rideInfo.user.name}
+                        </Text>
+                        <Text className="text-green-800">
+                          {rideInfo.user.phone}
                         </Text>
                       </View>
                     </View>
+                    <View>
+                      <QuestionMarkCircleIcon size={60} color="orange" />
+                    </View>
                   </View>
-                </View>
+                )}
+                <Text className="text-center uppercase text-green-800 text-xl">
+                  Ride details
+                </Text>
+                {rideInfo.amount ? (
+                  <View className="flex-row items-center justify-between">
+                    <View className="flex-row justify-between items-center w-full">
+                      <View className="space-y-3">
+                        <View>
+                          <Text className="font-bold">From</Text>
+                          <Text className="text-green-800">
+                            {rideInfo.from}
+                          </Text>
+                        </View>
+                        <View>
+                          <Text className="font-bold">Type of Ride</Text>
+                          <Text className="text-green-800">{rideType}</Text>
+                        </View>
+                      </View>
+                      <View className="space-y-3">
+                        <View>
+                          <Text className="font-bold">To</Text>
+                          <Text className="text-green-800">{rideInfo.to}</Text>
+                        </View>
+                        <View>
+                          <Text className="font-bold">Amount</Text>
+                          <Text className="text-green-800 text-4xl font-bold">
+                            <Text className="line-through">N</Text>{" "}
+                            {rideInfo.amount}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                ) : (
+                  <ActivityIndicator size={40} color="166534" />
+                )}
                 <View className="flex-row space-x-1 justify-between items-center">
                   <TouchableOpacity
                     onPress={() => {
@@ -228,21 +241,19 @@ const MapScreen = () => {
                     <Text className="text-xl text-white">Cancel ride</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    onPress={() => {
-                      if (role !== "rider") setShowPaymentModal(true);
-                    }}
+                    onPress={() => {}}
                     className="w-auto rounded-md items-center px-5 py-3 bg-green-800"
                   >
-                    <Text className="text-xl text-white">
-                      {role === "student" ? "Make Payment" : "Start Ride"}
-                    </Text>
+                    <Text className="text-xl text-white">Start Ride</Text>
                   </TouchableOpacity>
                 </View>
               </View>
             </View>
           ) : (
             <View className="flex-1 items-center justify-center space-y-4">
-              <Text className="text-center font-bold text-xl">Loading map</Text>
+              <Text className="text-center font-bold text-xl">
+                Loading map...
+              </Text>
               <ActivityIndicator size={100} color="#166534" />
             </View>
           )}

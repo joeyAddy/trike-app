@@ -93,15 +93,16 @@ const RiderDashboard = ({ saveDetails, role }) => {
     setVisible(true);
     try {
       const response = await axios.get(
-        `${server}ride/match?id=${saveDetails._id}`
+        `${server}ride/rider/match?id=${riderInfo._id}`
       );
 
       if (response) {
         setVisible(false);
-        setRides(response.data.data[0]);
-        setShowListModal(false);
-        setShowRequestModal(true);
-        console.log(response.data.data[0]);
+        setRides(response.data.data);
+        setShowListModal(true);
+        setShowNoResponseModal(false);
+        // setShowRequestModal(true);
+        console.log(response.data.data, "rides");
       } else {
         setVisible(false);
         // throw new Error(response.data.error_message);
@@ -142,7 +143,7 @@ const RiderDashboard = ({ saveDetails, role }) => {
           ride={selectedRide}
         />
       )}
-      {rides && selectedRide && (
+      {rides && (
         <RidesListModal
           visible={showListModal}
           setVisible={setShowListModal}
@@ -193,7 +194,7 @@ const RiderDashboard = ({ saveDetails, role }) => {
               onChangeText={(text) =>
                 setRiderInfo({ ...riderInfo, plateNumber: text })
               }
-              placeholder="Plate Numver"
+              placeholder="Plate Number"
             />
           </View>
           <TouchableOpacity

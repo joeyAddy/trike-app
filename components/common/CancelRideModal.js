@@ -4,7 +4,7 @@ import { Modal, Portal } from "react-native-paper";
 import { TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 
-const CancelRideModal = ({ visible, setVisible }) => {
+const CancelRideModal = ({ visible, setVisible, setEmptyRiders }) => {
   const router = useRouter();
   const containerStyle = {
     backgroundColor: "white",
@@ -31,6 +31,7 @@ const CancelRideModal = ({ visible, setVisible }) => {
           <View className="flex-row space-x-1 justify-between items-center">
             <TouchableOpacity
               onPress={() => {
+                setEmptyRiders(true);
                 router.back();
               }}
               className="w-auto px-5 rounded-md items-center py-3 bg-red-800"

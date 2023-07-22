@@ -99,6 +99,10 @@ const Reservation = () => {
     })();
   }, [placeDestinationId]);
 
+  useEffect(() => {
+    i;
+  }, []);
+
   const handleSubmit = () => {
     router.push({
       pathname: `map/student`,
@@ -110,6 +114,7 @@ const Reservation = () => {
         originMainText,
         destinationMainText,
         role,
+        saveDetails,
       },
     });
   };
@@ -144,6 +149,8 @@ const Reservation = () => {
 
       if (userDetails != null) {
         setSaveDetails(userDetails);
+      } else {
+        router.push("/signin");
       }
     })();
   }, []);

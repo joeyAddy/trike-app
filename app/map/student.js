@@ -19,6 +19,11 @@ import destinationIcon from "../../assets/destination.png";
 import originIcon from "../../assets/origin.png";
 import { Image } from "react-native";
 import socketIOClient from "socket.io-client";
+import useAxiosPost from "../../services/useAxiosPost";
+import axios from "axios";
+import { getDetails } from "../../utils/localStorage";
+import calculateCabFee from "../../utils/calculateCabFee";
+import RidersListModal from "../../components/student/RidersListModal";
 
 const MapScreen = () => {
   const params = useLocalSearchParams();
@@ -26,6 +31,7 @@ const MapScreen = () => {
 
   const [location, setLocation] = useState(null);
   const [coordinates, setCoordinates] = useState([]);
+  const [amount, setAmount] = useState(0);
 
   const [origin, setOrigin] = useState({
     latitude: parseFloat(params?.origin.split(" ")[0]),
@@ -37,15 +43,21 @@ const MapScreen = () => {
   });
   const [rideInfo, setRideInfo] = useState();
   const [rideType, setRideType] = useState();
+  const [riders, setRiders] = useState();
+  const [rider, setRider] = useState(null);
+  const [emptyRiders, setEmptyRiders] = useState(false);
 
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showRidersListModal, setShowRidersListModal] = useState(false);
   const [confirmedPayment, setConfirmedPayment] = useState(false);
   const [waiting, setWaiting] = useState(false);
   const [searching, setSearching] = useState(false);
   const [match, setMatch] = useState();
 
   const [socket, setSocket] = useState(null);
+
+  const { data, loading, error, setLoading, postData } = useAxiosPost();
 
   //Url to backend
   const serverUrl = "http://localhost:8080";
@@ -84,6 +96,12 @@ const MapScreen = () => {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (emptyRiders === true) {
+      setRiders([]);
+    }
+  }, [emptyRiders]);
 
   // Code to handle the form submission and collect details goes here
   function handleSubmit() {
@@ -167,6 +185,72 @@ const MapScreen = () => {
     }));
   };
 
+  useEffect(() => {
+    (async () => {
+      if (coordinates) {
+        userDetails = await getDetails("userDetails");
+
+        Alert.alert(userDetails._id);
+
+        const data = {
+          origin,
+          destination,
+          rideType,
+          paymentMethod: params?.paymentMethod,
+          to: params?.destinationMainText,
+          from: params?.originMainText,
+          coordinates,
+          user: userDetails?._id,
+          amount,
+          rideInfo,
+        };
+        console.log(params.saveDetails.name, "userDetails");
+        console.log(data, "payload");
+        postData(`${server}ride`, data);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (data) {
+      console.log(data);
+      (async () => {
+        const userDetails = await getDetails("userDetails");
+
+        try {
+          const response = await axios.get(
+            `${server}ride/student/match?id=${userDetails._id}`
+          );
+
+          if (response) {
+            console.log(response.data.data, "riders");
+            setRiders(response.data.data);
+            setShowRidersListModal(true);
+          }
+        } catch (error) {
+          console.error("Error fetching rider profile:", JSON.stringify(error));
+          return null;
+        }
+      })();
+    }
+  }, [data]);
+
+  useEffect(() => {
+    if (error) {
+      console.log(JSON.stringify(error));
+    }
+  }, [error]);
+
+  useEffect(() => {
+    if (rideInfo) {
+      const { totalFee } = calculateCabFee(
+        parseFloat(rideInfo.distance?.text),
+        600
+      );
+      setAmount(totalFee);
+    }
+  }, [rideInfo]);
+
   return (
     <PaperProvider>
       <SafeAreaProvider>
@@ -181,6 +265,7 @@ const MapScreen = () => {
               <CancelRideModal
                 visible={showCancelModal}
                 setVisible={setShowCancelModal}
+                setEmptyRiders={setEmptyRiders}
               />
               <PaymentModal
                 visible={showPaymentModal}
@@ -204,6 +289,15 @@ const MapScreen = () => {
                   setVisible={setSearching}
                   visible={searching}
                   text=" Searching for a ride"
+                />
+              )}
+              {riders && (
+                <RidersListModal
+                  visible={showRidersListModal}
+                  setVisible={setShowRidersListModal}
+                  riders={riders}
+                  setRider={setRider}
+                  setRiders={setRiders}
                 />
               )}
               {location && coordinates && rideInfo ? (
@@ -293,59 +387,70 @@ const MapScreen = () => {
                   <ActivityIndicator size={40} color="#166534" />
                 </View>
               )}
-              <View className="h-2/5 relative bottom-0 space-y-4 bg-slate-50 shadow-2xl border-2 p-3 border-green-800 w-full rounded-tr-xl rounded-tl-xl">
-                <View className="flex-row justify-between items-center">
-                  <View className="flex-row space-x-2">
-                    <UserCircleIcon size={60} color="#166534" />
+              <View className="h-fit relative bottom-0 space-y-4 bg-slate-50 shadow-2xl border-2 p-3 pb-5 border-green-800 w-full rounded-tr-xl rounded-tl-xl">
+                {rider === null ? (
+                  <>
+                    <ActivityIndicator size={40} color="#166534" />
+                    <Text className="text-center text-orange-800 font-bold">
+                      Searching for rider...
+                    </Text>
+                  </>
+                ) : (
+                  <View className="flex-row justify-between items-center">
+                    <View className="flex-row space-x-2">
+                      <UserCircleIcon size={60} color="#166534" />
+                      <View>
+                        <Text className="font-bold">Trike Owner</Text>
+                        <Text className="text-green-800">
+                          {rider.rider.user.name}
+                        </Text>
+                        <Text className="text-green-800">
+                          {rider.rider.user.phone}
+                        </Text>
+                      </View>
+                    </View>
                     <View>
-                      <Text className="font-bold">
-                        {role !== "student" ? "Student Details" : "Trike Owner"}
-                      </Text>
-                      <Text className="text-green-800">
-                        {role !== "student"
-                          ? "Nafisa Somebody"
-                          : "Abdul Somebody"}
-                      </Text>
-                      <Text className="text-green-800">09076453532</Text>
+                      <QuestionMarkCircleIcon size={60} color="orange" />
                     </View>
                   </View>
-                  <View>
-                    <QuestionMarkCircleIcon size={60} color="orange" />
-                  </View>
-                </View>
+                )}
                 <Text className="text-center uppercase text-green-800 text-xl">
                   Ride details
                 </Text>
-                <View className="flex-row items-center justify-between">
-                  <View className="flex-row justify-between items-center w-full">
-                    <View className="space-y-3">
-                      <View>
-                        <Text className="font-bold">From</Text>
-                        <Text className="text-green-800 w-1/2">
-                          {params.originMainText}
-                        </Text>
+                {amount ? (
+                  <View className="flex-row items-center justify-between">
+                    <View className="flex-row justify-between items-center w-full">
+                      <View className="space-y-3 w-1/2">
+                        <View>
+                          <Text className="font-bold">From</Text>
+                          <Text className="text-green-800">
+                            {params?.originMainText}
+                          </Text>
+                        </View>
+                        <View>
+                          <Text className="font-bold">Type of Ride</Text>
+                          <Text className="text-green-800">{rideType}</Text>
+                        </View>
                       </View>
-                      <View>
-                        <Text className="font-bold">Type of Ride</Text>
-                        <Text className="text-green-800">{rideType}</Text>
-                      </View>
-                    </View>
-                    <View className="space-y-3">
-                      <View>
-                        <Text className="font-bold">To</Text>
-                        <Text className="text-green-800 w-1/2">
-                          {params.destinationMainText}
-                        </Text>
-                      </View>
-                      <View>
-                        <Text className="font-bold">Amount</Text>
-                        <Text className="text-green-800 text-4xl font-bold">
-                          <Text className="line-through">N</Text> 550
-                        </Text>
+                      <View className="space-y-3 w-1/2">
+                        <View>
+                          <Text className="font-bold text-right">To</Text>
+                          <Text className="text-green-800 text-right">
+                            {params?.destinationMainText}
+                          </Text>
+                        </View>
+                        <View>
+                          <Text className="font-bold text-right">Amount</Text>
+                          <Text className="text-green-800 text-4xl font-bold text-right">
+                            <Text className="line-through">N</Text> {amount}
+                          </Text>
+                        </View>
                       </View>
                     </View>
                   </View>
-                </View>
+                ) : (
+                  <ActivityIndicator size={40} color="166534" />
+                )}
                 <View className="flex-row space-x-1 justify-between items-center">
                   <TouchableOpacity
                     onPress={() => {
@@ -369,7 +474,7 @@ const MapScreen = () => {
           ) : (
             <View className="flex-1 items-center justify-center space-y-4">
               <Text className="text-center font-bold text-xl">
-                Searching for available rider
+                Loading map...
               </Text>
               <ActivityIndicator size={100} color="#166534" />
             </View>
