@@ -23,6 +23,8 @@ import axios from "axios";
 const MapScreen = () => {
   const params = useSearchParams();
 
+  const [isMapLoaded, setIsMapLoaded] = useState(false);
+
   const [location, setLocation] = useState(null);
   const [coordinates, setCoordinates] = useState([]);
 
@@ -78,6 +80,19 @@ const MapScreen = () => {
     if (rideInfo) console.log(rideInfo, "ride info");
   }, []);
 
+  const handleMapReady = () => {
+    setIsMapLoaded(true);
+  };
+
+  if (isMapLoaded === false)
+    return (
+      <View className="flex-1 justify-center items-center">
+        <Text className="font-bold text-yellow-400 text-large">
+          Getting things ready...
+        </Text>
+      </View>
+    );
+
   return (
     <PaperProvider>
       <SafeAreaProvider>
@@ -109,6 +124,7 @@ const MapScreen = () => {
                       latitudeDelta: 0.0922,
                       longitudeDelta: 0.0421,
                     }}
+                    onMapReady={handleMapReady}
                   >
                     <Marker
                       coordinate={{

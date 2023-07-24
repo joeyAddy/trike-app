@@ -17,7 +17,7 @@
     "web": {
       "bundler": "metro"
     },
-    "name": "trike-app",
+    "name": "Trike",
     "slug": "trike-app",
     "extra": {
       "eas": {
