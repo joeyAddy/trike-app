@@ -23,8 +23,6 @@ import axios from "axios";
 const MapScreen = () => {
   const params = useSearchParams();
 
-  const [isMapLoaded, setIsMapLoaded] = useState(false);
-
   const [location, setLocation] = useState(null);
   const [coordinates, setCoordinates] = useState([]);
 
@@ -80,19 +78,6 @@ const MapScreen = () => {
     if (rideInfo) console.log(rideInfo, "ride info");
   }, []);
 
-  const handleMapReady = () => {
-    setIsMapLoaded(true);
-  };
-
-  if (isMapLoaded === false)
-    return (
-      <View className="flex-1 justify-center items-center">
-        <Text className="font-bold text-yellow-400 text-large">
-          Getting things ready...
-        </Text>
-      </View>
-    );
-
   return (
     <PaperProvider>
       <SafeAreaProvider>
@@ -124,7 +109,6 @@ const MapScreen = () => {
                       latitudeDelta: 0.0922,
                       longitudeDelta: 0.0421,
                     }}
-                    onMapReady={handleMapReady}
                   >
                     <Marker
                       coordinate={{
@@ -241,7 +225,7 @@ const MapScreen = () => {
                 <Text className="text-center uppercase text-green-800 text-xl">
                   Ride details
                 </Text>
-                {rideInfo.amount !== undefined ? (
+                {rideInfo?.amount !== undefined ? (
                   <View className="flex-row items-center justify-between">
                     <View className="flex-row justify-between items-center w-full">
                       <View className="space-y-3 w-1/2 ">

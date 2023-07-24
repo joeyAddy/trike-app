@@ -53,11 +53,11 @@ const RiderDashboard = ({ saveDetails, role }) => {
           `${server}rider?email=${saveDetails.email}`
         );
 
-        if (response.data) {
+        if (response.data.data[0] !== undefined) {
           setIsLoading(false);
           setRiderInfo(response.data.data[0]);
           setHasProfile(true);
-          console.log(response.data.data[0]);
+          console.log(response.data.data[0], "details");
         } else {
           setHasProfile(false);
           setIsLoading(false);
@@ -86,7 +86,7 @@ const RiderDashboard = ({ saveDetails, role }) => {
   const handleProfileSubmit = () => {
     if (!riderInfo.plateNumber) return;
     Alert.alert(riderInfo.plateNumber);
-    postData(`${server}rider`, riderInfo);
+    if (saveDetails.origin) postData(`${server}rider`, riderInfo);
   };
 
   const handleSearchSubmit = async () => {
@@ -190,7 +190,7 @@ const RiderDashboard = ({ saveDetails, role }) => {
             <TextInput
               className="h-8 my-2 w-full"
               required
-              value={riderInfo.plateNumber}
+              value={riderInfo?.plateNumber}
               onChangeText={(text) =>
                 setRiderInfo({ ...riderInfo, plateNumber: text })
               }
@@ -220,12 +220,12 @@ const RiderDashboard = ({ saveDetails, role }) => {
             <View className="h-5 w-5 rounded-full bg-green-500"></View>
             <Text className="text-xl text-center">Status: Online</Text>
           </View>
-          <View className="w-full">
-            <Text className="text-xl">Keke Owner: {saveDetails?.name}</Text>
-            <Text className="text-xl">
+          <View className="w-full mt-3">
+            <Text className="text-lg">Keke Owner: {saveDetails?.name}</Text>
+            <Text className="text-lg">
               Plate Number: {riderInfo?.plateNumber}
             </Text>
-            <Text className="text-xl">Code: {riderInfo?.vehicleCode}</Text>
+            <Text className="text-lg">Code: {riderInfo?.vehicleCode}</Text>
           </View>
         </View>
       )}

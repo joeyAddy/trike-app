@@ -10,9 +10,10 @@ const RidesListModal = ({ visible, setVisible, rides, setSelectedRide }) => {
   const router = useRouter();
   const containerStyle = {
     backgroundColor: "white",
-    paddingVertical: 20,
+    paddingVertical: 30,
     paddingHorizontal: 20,
     margin: 30,
+    height: 500,
     borderRadius: 8,
   };
 
