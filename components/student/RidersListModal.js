@@ -17,8 +17,9 @@ const RidersListModal = ({
   const containerStyle = {
     backgroundColor: "white",
     paddingVertical: 30,
-    paddingHorizontal: 30,
+    paddingHorizontal: 20,
     margin: 30,
+    height: 500,
     borderRadius: 8,
   };
   return (
@@ -33,6 +34,7 @@ const RidersListModal = ({
             Avaliable rides
           </Text>
           <FlatList
+            showsVerticalScrollIndicator={false}
             data={riders}
             renderItem={({ item }) => (
               <TouchableOpacity
@@ -61,7 +63,7 @@ const RidersListModal = ({
                 </View>
               </TouchableOpacity>
             )}
-            keyExtractor={(item) => item._id}
+            keyExtractor={(item, index) => item.rider._id + index}
             keyboardShouldPersistTaps="always"
           />
         </View>

@@ -3,7 +3,7 @@ import { StyleSheet, View, Dimensions, Text, Alert } from "react-native";
 import MapView, { Marker, Polyline } from "react-native-maps";
 import * as Location from "expo-location";
 import { SafeAreaView } from "react-native";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { Stack, useSearchParams } from "expo-router";
 import { UserCircleIcon } from "react-native-heroicons/outline";
 import { QuestionMarkCircleIcon } from "react-native-heroicons/solid";
 import { TouchableOpacity } from "react-native";
@@ -15,10 +15,13 @@ import { ActivityIndicator } from "react-native";
 import LoadingModal from "../../components/common/LoadingModal";
 import destinationIcon from "../../assets/destination.png";
 import originIcon from "../../assets/origin.png";
+import riderIcon from "../../assets/rider.png";
 import { Image } from "react-native";
+import server from "../../constants/server";
+import axios from "axios";
 
 const MapScreen = () => {
-  const params = useLocalSearchParams();
+  const params = useSearchParams();
 
   const [location, setLocation] = useState(null);
   const [coordinates, setCoordinates] = useState([]);
@@ -32,16 +35,31 @@ const MapScreen = () => {
   const [searching, setSearching] = useState(false);
 
   useEffect(() => {
-    if (!params) {
+    if (!params.rideId) {
       setSearching(true);
       return;
     }
-    console.log(params.ride.item[0], "ride details");
-    // setCoordinates(params.item[0].ride.coordinates);
-    // setRideInfo(params.item[0].ride);
-    // setRideType(params.item[0].ride?.rideType);
-    // setRideTimeLocation(params.item[0].ride?.rideInfo);
-  }, [params.ride]);
+    if (params) {
+      console.log(params.rideId);
+    }
+    (async () => {
+      try {
+        const response = await axios.get(`${server}ride?id=${params?.rideId}`);
+
+        if (response) {
+          setSearching(false);
+          console.log(response.data.data?.amount, "rideInfo");
+          setCoordinates(response.data.data.coordinates);
+          setRideInfo(response.data.data);
+          setRideType(response.data.data?.rideType);
+        }
+      } catch (error) {
+        setSearching(false);
+        console.error("Error fetching ride details:", error);
+        return null;
+      }
+    })();
+  }, [params.rideId]);
 
   useEffect(() => {
     (async () => {
@@ -69,17 +87,17 @@ const MapScreen = () => {
               headerShown: false,
             }}
           />
-          {searching === true ? (
+          {coordinates ? (
             <View style={styles.container}>
               <CancelRideModal
                 visible={showCancelModal}
                 setVisible={setShowCancelModal}
               />
-              <LoadingModal
+              {/* <LoadingModal
                 setVisible={setWaiting}
                 visible={waiting}
                 text="Waiting for Rider to accept ride"
-              />
+              /> */}
               {location && coordinates && rideInfo ? (
                 <View className="relative h-3/5">
                   <MapView
@@ -99,14 +117,23 @@ const MapScreen = () => {
                       }}
                       title="My Location"
                       description={"This is your current location"}
-                    />
+                    >
+                      <Image
+                        source={riderIcon}
+                        style={{
+                          resizeMode: "contain",
+                          height: 50,
+                          width: 50,
+                        }}
+                      />
+                    </Marker>
                     <Marker
                       coordinate={{
-                        latitude: rideInfo.origin.latitude,
-                        longitude: rideInfo.origin.longitude,
+                        latitude: rideInfo?.origin.latitude,
+                        longitude: rideInfo?.origin.longitude,
                       }}
                       title="Origin"
-                      description={rideInfo.from}
+                      description={rideInfo?.from}
                     >
                       <Image
                         source={originIcon}
@@ -120,11 +147,11 @@ const MapScreen = () => {
                     <Marker
                       style={styles.markerStyle}
                       coordinate={{
-                        latitude: rideInfo.destination.latitude,
-                        longitude: rideInfo.destination.longitude,
+                        latitude: rideInfo?.destination.latitude,
+                        longitude: rideInfo?.destination.longitude,
                       }}
                       title="Destination"
-                      description={rideInfo.to}
+                      description={rideInfo?.to}
                     >
                       <Image
                         source={destinationIcon}
@@ -168,12 +195,12 @@ const MapScreen = () => {
                 </View>
               )}
 
-              <View className="h-2/5 relative bottom-0 space-y-4 bg-slate-50 shadow-2xl border-2 p-3 border-green-800 w-full rounded-tr-xl rounded-tl-xl">
-                {!rideInfo.user === null ? (
+              <View className="h-fit relative bottom-0 space-y-1 bg-slate-50 shadow-2xl border-2 p-3 pb-5  border-green-800 w-full rounded-tr-xl rounded-tl-xl">
+                {!rideInfo ? (
                   <>
                     <ActivityIndicator size={40} color="#166534" />
                     <Text className="text-center text-orange-800 font-bold">
-                      Searching for rider...
+                      Fetching student details...
                     </Text>
                   </>
                 ) : (
@@ -183,10 +210,10 @@ const MapScreen = () => {
                       <View>
                         <Text className="font-bold">Student Details</Text>
                         <Text className="text-green-800">
-                          {rideInfo.user.name}
+                          {rideInfo?.user.name}
                         </Text>
                         <Text className="text-green-800">
-                          {rideInfo.user.phone}
+                          {rideInfo?.user.phone}
                         </Text>
                       </View>
                     </View>
@@ -198,14 +225,14 @@ const MapScreen = () => {
                 <Text className="text-center uppercase text-green-800 text-xl">
                   Ride details
                 </Text>
-                {rideInfo.amount ? (
+                {rideInfo.amount !== undefined ? (
                   <View className="flex-row items-center justify-between">
                     <View className="flex-row justify-between items-center w-full">
-                      <View className="space-y-3">
-                        <View>
+                      <View className="space-y-3 w-1/2 ">
+                        <View className="">
                           <Text className="font-bold">From</Text>
-                          <Text className="text-green-800">
-                            {rideInfo.from}
+                          <Text className="text-green-800 w-full ">
+                            {rideInfo?.from}
                           </Text>
                         </View>
                         <View>
@@ -213,16 +240,18 @@ const MapScreen = () => {
                           <Text className="text-green-800">{rideType}</Text>
                         </View>
                       </View>
-                      <View className="space-y-3">
-                        <View>
+                      <View className="space-y-3 w-1/2">
+                        <View className="items-end">
                           <Text className="font-bold">To</Text>
-                          <Text className="text-green-800">{rideInfo.to}</Text>
+                          <Text className="text-green-800 w-full text-right">
+                            {rideInfo?.to}
+                          </Text>
                         </View>
                         <View>
-                          <Text className="font-bold">Amount</Text>
-                          <Text className="text-green-800 text-4xl font-bold">
+                          <Text className="font-bold text-right">Amount</Text>
+                          <Text className="text-green-800 text-4xl font-bold text-right">
                             <Text className="line-through">N</Text>{" "}
-                            {rideInfo.amount}
+                            {rideInfo?.amount}
                           </Text>
                         </View>
                       </View>

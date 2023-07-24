@@ -100,8 +100,10 @@ const Reservation = () => {
   }, [placeDestinationId]);
 
   useEffect(() => {
-    i;
-  }, []);
+    if (saveDetails === null) {
+      if (role) router.push(`/login/${role}`);
+    }
+  }, [saveDetails]);
 
   const handleSubmit = () => {
     router.push({
@@ -149,8 +151,6 @@ const Reservation = () => {
 
       if (userDetails != null) {
         setSaveDetails(userDetails);
-      } else {
-        router.push("/signin");
       }
     })();
   }, []);

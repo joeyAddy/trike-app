@@ -17,6 +17,7 @@ import LoadingModal from "../../components/common/LoadingModal";
 import { GOOGLE_MAPS_API_KEY } from "../../secrets";
 import destinationIcon from "../../assets/destination.png";
 import originIcon from "../../assets/origin.png";
+import riderIcon from "../../assets/rider.png";
 import { Image } from "react-native";
 import socketIOClient from "socket.io-client";
 import useAxiosPost from "../../services/useAxiosPost";
@@ -60,7 +61,7 @@ const MapScreen = () => {
   const { data, loading, error, setLoading, postData } = useAxiosPost();
 
   //Url to backend
-  const serverUrl = "http://localhost:8080";
+  const serverUrl = "http://192.168.242.151:8080";
 
   const socketConnection = socketIOClient(serverUrl, {
     transports: ["websocket"],
@@ -71,7 +72,8 @@ const MapScreen = () => {
   const connectToSocket = () => {
     setSocket(socketConnection);
     socketConnection.on("connection", (socket) => {
-      console.log(socket.id, "cnnsdfsdfvsvfd");
+      console.log("connected");
+      Alert.alert("connected");
     });
     // Event listeners
     socketConnection.on("match_found", (matchedData) => {
@@ -82,7 +84,7 @@ const MapScreen = () => {
   };
 
   const shareDetailsWithSocket = (details) => {
-    if (socket) {
+    if (socket !== null) {
       socket.emit("share_details", details);
     }
   };
@@ -106,9 +108,7 @@ const MapScreen = () => {
   // Code to handle the form submission and collect details goes here
   function handleSubmit() {
     const details = {
-      origin,
-      coordinates,
-      rideType,
+      location,
     };
     shareDetailsWithSocket(details);
   }
@@ -119,8 +119,6 @@ const MapScreen = () => {
 
   useEffect(() => {
     setRole(params.role);
-    Alert.alert(params.role);
-    Alert.alert(params.originMainText);
   }, [params.role]);
 
   useEffect(() => {
@@ -186,30 +184,30 @@ const MapScreen = () => {
   };
 
   useEffect(() => {
+    if (!rideInfo && !rideType) return;
     (async () => {
       if (coordinates) {
         userDetails = await getDetails("userDetails");
-
-        Alert.alert(userDetails._id);
-
-        const data = {
-          origin,
-          destination,
-          rideType,
-          paymentMethod: params?.paymentMethod,
-          to: params?.destinationMainText,
-          from: params?.originMainText,
-          coordinates,
-          user: userDetails?._id,
-          amount,
-          rideInfo,
-        };
-        console.log(params.saveDetails.name, "userDetails");
-        console.log(data, "payload");
-        postData(`${server}ride`, data);
+        if (userDetails) {
+          const data = {
+            origin,
+            destination,
+            rideType,
+            paymentMethod: params?.paymentMethod,
+            to: params?.destinationMainText,
+            from: params?.originMainText,
+            coordinates,
+            user: userDetails?._id,
+            amount,
+            rideInfo,
+          };
+          console.log(params.saveDetails.name, "userDetails");
+          console.log(data, "payload");
+          postData(`${server}ride`, data);
+        }
       }
     })();
-  }, []);
+  }, [rideInfo, rideType]);
 
   useEffect(() => {
     if (data) {
@@ -217,6 +215,7 @@ const MapScreen = () => {
       (async () => {
         const userDetails = await getDetails("userDetails");
 
+        if (!userDetails) return;
         try {
           const response = await axios.get(
             `${server}ride/student/match?id=${userDetails._id}`
@@ -322,6 +321,23 @@ const MapScreen = () => {
                     />
                     <Marker
                       coordinate={{
+                        latitude: location.coords.latitude,
+                        longitude: location.coords.longitude,
+                      }}
+                      title="Rider"
+                      description={"Rider location"}
+                    >
+                      <Image
+                        source={riderIcon}
+                        style={{
+                          resizeMode: "contain",
+                          height: 50,
+                          width: 50,
+                        }}
+                      />
+                    </Marker>
+                    <Marker
+                      coordinate={{
                         latitude: origin.latitude,
                         longitude: origin.longitude,
                       }}
@@ -387,7 +403,7 @@ const MapScreen = () => {
                   <ActivityIndicator size={40} color="#166534" />
                 </View>
               )}
-              <View className="h-fit relative bottom-0 space-y-4 bg-slate-50 shadow-2xl border-2 p-3 pb-5 border-green-800 w-full rounded-tr-xl rounded-tl-xl">
+              <View className="h-fit relative bottom-0 space-y-1 bg-slate-50 shadow-2xl border-2 p-3 pb-5 border-green-800 w-full rounded-tr-xl rounded-tl-xl">
                 {rider === null ? (
                   <>
                     <ActivityIndicator size={40} color="#166534" />

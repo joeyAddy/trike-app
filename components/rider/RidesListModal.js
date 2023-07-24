@@ -32,13 +32,17 @@ const RidesListModal = ({ visible, setVisible, rides, setSelectedRide }) => {
             Avaliable rides
           </Text>
           <FlatList
+            showsVerticalScrollIndicator={false}
             data={rides}
             renderItem={({ item }) => (
               <TouchableOpacity
                 onPress={() => {
+                  console.log(item);
                   router.push({
                     pathname: "/map/rider",
-                    params: { ride: item },
+                    params: {
+                      rideId: item.ride._id,
+                    },
                   });
                   setVisible(false);
                 }}

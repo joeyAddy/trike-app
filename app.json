@@ -1,10 +1,28 @@
 {
   "expo": {
+    "splash": {
+      "image": "./assets/splash.png",
+      "backgroundColor": "#01562A",
+      "resizeMode": "cover"
+    },
+    "icon": "./assets/icon.png",
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#01562A"
+      },
+      "package": "com.joeydevs.trikeapp"
+    },
     "scheme": "acme",
     "web": {
       "bundler": "metro"
     },
     "name": "trike-app",
-    "slug": "trike-app"
+    "slug": "trike-app",
+    "extra": {
+      "eas": {
+        "projectId": "39ae7c33-d546-4db9-8a43-34556e0c1f9b"
+      }
+    }
   }
 }
